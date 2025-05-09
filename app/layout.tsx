@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Poppins, Playfair_Display } from "next/font/google"
+import { DirectEditProvider } from "./admin/direct-edit-provider"
 import "./globals.css"
 
 const poppins = Poppins({
@@ -31,7 +32,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${poppins.variable} ${playfair.variable} font-sans`}>{children}</body>
+      <body className={`${poppins.variable} ${playfair.variable} font-sans`}>
+        <DirectEditProvider>
+          {children}
+        </DirectEditProvider>
+      </body>
     </html>
   )
 }
