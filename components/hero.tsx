@@ -2,6 +2,7 @@
 
 import { Music, Palmtree, Mountain, Heart } from "lucide-react"
 import { useState, useEffect } from "react"
+import Link from "next/link"
 
 export function Hero() {
   const [activeIndex, setActiveIndex] = useState(0)
@@ -72,7 +73,9 @@ export function Hero() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center w-[90%] mx-auto">
-            <button className="vintage-button">Explore Tours</button>
+            <Link href="/tours" className="vintage-button">
+              Explore Tours
+            </Link>
             <button className="bg-transparent hover:bg-[#e9b824] text-[#f8ede3] hover:text-[#1a5d1a] font-bold py-3 px-6 rounded-md border-2 border-[#e9b824] uppercase tracking-wider transition-all duration-300">
               Watch Video
             </button>

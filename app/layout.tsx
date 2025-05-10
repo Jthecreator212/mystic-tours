@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.png",
   },
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -33,9 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.variable} ${playfair.variable} font-sans`}>
-        <DirectEditProvider>
-          {children}
-        </DirectEditProvider>
+        {children}
       </body>
     </html>
   )

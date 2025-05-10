@@ -1,114 +1,105 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { 
-  Image as ImageIcon, 
-  Home, 
-  Users, 
-  Calendar, 
-  Settings,
-  Menu,
-  X
-} from "lucide-react"
+import { Settings, ImageIcon, Folder, Users, Calendar, LogOut, Plus, Upload, Trash2, Edit2, Menu, Home } from "lucide-react"
+import { adminStyles } from "./styles"
 
 export default function AdminLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+}) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [activePath, setActivePath] = useState<string>("")
+
+  useEffect(() => {
+    setActivePath(window.location.pathname)
+    const handleRouteChange = () => {
+      setActivePath(window.location.pathname)
+    }
+    window.addEventListener('popstate', handleRouteChange)
+    return () => window.removeEventListener('popstate', handleRouteChange)
+  }, [])
+
+  const menuItems = [
+    { title: "Home", href: "/", icon: Home },
+    { title: "Dashboard", href: "/admin", icon: Settings },
+    { title: "Image Manager", href: "/admin/images", icon: ImageIcon },
+    { title: "Tours", href: "/admin/tours", icon: Calendar },
+    { title: "Users", href: "/admin/users", icon: Users },
+  ]
 
   return (
-    <div className="min-h-screen bg-[#f8ede3] flex">
-      {/* Mobile sidebar toggle */}
-      <button 
-        className="md:hidden fixed top-4 left-4 z-50 bg-[#1a5d1a] text-white p-2 rounded-md"
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-      >
-        {sidebarOpen ? <X /> : <Menu />}
-      </button>
-
+    <div className="flex h-screen bg-[#f8f5f0]">
       {/* Sidebar */}
-      <div className={`
-        fixed inset-y-0 left-0 transform md:relative md:translate-x-0 transition duration-200 ease-in-out z-30
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        w-64 bg-[#1a5d1a] text-[#f8ede3] p-6 flex flex-col
-      `}>
-        <div className="text-xl font-bold mb-8 flex items-center">
-          <ImageIcon className="mr-2 text-[#e9b824]" />
-          <span>Mystic Admin</span>
+      <aside
+        className={`fixed inset-y-0 left-0 w-64 ${adminStyles.sidebar} transition-all duration-300 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className={`${adminStyles.sidebarHeader} flex items-center`}>
+          <h2 className="text-xl font-bold">Admin Panel</h2>
         </div>
-        
-        <nav className="flex-1">
-          <ul className="space-y-2">
-            <li>
-              <Link 
-                href="/admin" 
-                className="flex items-center p-2 rounded-md hover:bg-[#4e9f3d] transition-colors"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <Home className="mr-2 text-[#e9b824]" size={18} />
-                <span>Dashboard</span>
-              </Link>
-            </li>
-            <li>
-              <Link 
-                href="/admin/images" 
-                className="flex items-center p-2 rounded-md hover:bg-[#4e9f3d] transition-colors bg-[#4e9f3d]"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <ImageIcon className="mr-2 text-[#e9b824]" size={18} />
-                <span>Image Management</span>
-              </Link>
-            </li>
-            <li>
-              <Link 
-                href="/admin/users" 
-                className="flex items-center p-2 rounded-md hover:bg-[#4e9f3d] transition-colors"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <Users className="mr-2 text-[#e9b824]" size={18} />
-                <span>Users</span>
-              </Link>
-            </li>
-            <li>
-              <Link 
-                href="/admin/bookings" 
-                className="flex items-center p-2 rounded-md hover:bg-[#4e9f3d] transition-colors"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <Calendar className="mr-2 text-[#e9b824]" size={18} />
-                <span>Bookings</span>
-              </Link>
-            </li>
-            <li>
-              <Link 
-                href="/admin/settings" 
-                className="flex items-center p-2 rounded-md hover:bg-[#4e9f3d] transition-colors"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <Settings className="mr-2 text-[#e9b824]" size={18} />
-                <span>Settings</span>
-              </Link>
-            </li>
+        <nav className="pt-4">
+          <ul className="space-y-1">
+            {menuItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={`${adminStyles.sidebarLink} ${
+                    activePath === item.href ? adminStyles.sidebarActive : ""
+                  }`}
+                  onClick={() => setActivePath(item.href)}
+                >
+                  <item.icon className={`${adminStyles.sidebarIcon} ${
+                    activePath === item.href ? "text-white" : "text-[#fed100]"
+                  }`} />
+                  <span className={`${
+                    activePath === item.href ? "text-white" : "text-[#fed100]"
+                  }`}>{item.title}</span>
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
-        
-        <div className="mt-auto pt-4 border-t border-[#4e9f3d]">
-          <Link 
-            href="/" 
-            className="flex items-center p-2 rounded-md hover:bg-[#4e9f3d] transition-colors"
-          >
-            <span>Return to Website</span>
-          </Link>
+      </aside>
+
+      {/* Main Content */}
+      <main className={`flex-1 ml-64 ${adminStyles.mainContent} transition-all duration-300`}>
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 rounded hover:bg-[#1a5d1a] hover:text-white transition-colors"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <h1 className="text-2xl font-bold text-[#1a5d1a]">{menuItems.find(item => activePath.includes(item.href))?.title || "Admin Dashboard"}</h1>
+          </div>
+          <div className="flex space-x-4">
+            <button className={`${adminStyles.button.primary} flex items-center`}>
+              <Plus className="w-5 h-5 mr-2" />
+              Add New
+            </button>
+            <button className={`${adminStyles.button.secondary} flex items-center`}>
+              <Upload className="w-5 h-5 mr-2" />
+              Import
+            </button>
+            <button
+              onClick={() => {
+                // Add logout functionality here
+                console.log('Logout clicked')
+              }}
+              className={`${adminStyles.button.secondary} flex items-center`}
+            >
+              <LogOut className="w-5 h-5 mr-2" />
+              Logout
+            </button>
+          </div>
         </div>
-      </div>
-      
-      {/* Main content */}
-      <div className="flex-1 md:ml-64 p-6">
         {children}
-      </div>
+      </main>
     </div>
   )
 }

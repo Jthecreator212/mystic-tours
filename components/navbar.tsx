@@ -51,6 +51,9 @@ export function Navbar() {
             <Link href="/tours" className="nav-link text-[#e9b824]">
               Tours
             </Link>
+            <Link href="/blog" className="nav-link text-[#e9b824]">
+              Blog
+            </Link>
             <Link href="/about" className="nav-link text-[#e9b824]">
               About
             </Link>
