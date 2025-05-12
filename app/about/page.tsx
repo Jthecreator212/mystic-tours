@@ -54,28 +54,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl text-[#1a5d1a] mb-4">Meet Our Team</h2>
-          <p className="text-xl max-w-3xl mx-auto">
-            Our guides and staff are passionate cultural ambassadors with deep knowledge of Jamaica's history, music,
-            and traditions.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {teamData.map((member) => (
-            <div key={member.id} className="vintage-card text-center">
-              <div className="relative h-64 w-64 mx-auto mb-4 overflow-hidden rounded-full vintage-border">
-                <Image src={member.image || "/placeholder.svg"} alt={member.name} fill className="object-cover" />
-              </div>
-              <h3 className="text-2xl text-[#1a5d1a] mb-2">{member.name}</h3>
-              <p className="text-[#d83f31] font-bold mb-4">{member.role}</p>
-              <p>{member.bio}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Team section removed as requested */}
 
       <Footer />
     </main>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import Image from "next/image"
 import { Star, Users, Clock, Heart, Calendar, ChevronRight } from "lucide-react"
 
@@ -113,16 +114,18 @@ export function TourCard({ tour }: TourProps) {
 
           {/* Call to Action - High contrast, clear action */}
           <div className="relative group">
-            <button className="relative overflow-hidden rounded-md group-hover:scale-105 transition-transform duration-300">
-              <span className="absolute inset-0 bg-gradient-to-r from-[#e9b824] via-[#fed100] to-[#e9b824] opacity-80 group-hover:opacity-100 transition-opacity duration-300"></span>
-              <span className="absolute inset-0 bg-gradient-to-r from-[#1a5d1a] via-[#009b3a] to-[#1a5d1a] opacity-0 group-hover:opacity-90 transition-opacity duration-500 scale-x-0 group-hover:scale-x-100 origin-left transform"></span>
-              <span className="relative flex items-center px-4 py-2 font-bold text-sm tracking-wider uppercase text-[#1a5d1a] group-hover:text-[#e9b824] transition-colors duration-300">
-                <Calendar className="w-4 h-4 mr-1 group-hover:animate-pulse" />
-                Book Now
-                <ChevronRight className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform duration-300" />
-              </span>
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1a5d1a] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></span>
-            </button>
+            <Link href={`/book/${tour.id}`} className="relative overflow-hidden rounded-md group-hover:scale-105 transition-transform duration-300 focus:outline-none" passHref legacyBehavior>
+  <a className="block focus:outline-none" tabIndex={0} aria-label={`Book tour: ${tour.title}`}>
+    <span className="absolute inset-0 bg-gradient-to-r from-[#e9b824] via-[#fed100] to-[#e9b824] opacity-80 group-hover:opacity-100 transition-opacity duration-300"></span>
+    <span className="absolute inset-0 bg-gradient-to-r from-[#1a5d1a] via-[#009b3a] to-[#1a5d1a] opacity-0 group-hover:opacity-90 transition-opacity duration-500 scale-x-0 group-hover:scale-x-100 origin-left transform"></span>
+    <span className="relative flex items-center px-4 py-2 font-bold text-sm tracking-wider uppercase text-[#1a5d1a] group-hover:text-[#e9b824] transition-colors duration-300">
+      <Calendar className="w-4 h-4 mr-1 group-hover:animate-pulse" />
+      Book Now
+      <ChevronRight className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform duration-300" />
+    </span>
+    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1a5d1a] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></span>
+  </a>
+</Link>
             <div className="absolute -inset-1 bg-gradient-to-r from-[#e9b824] to-[#1a5d1a] rounded-md blur-sm opacity-0 group-hover:opacity-70 transition duration-300 group-hover:duration-200 -z-10"></div>
           </div>
         </div>

@@ -25,7 +25,6 @@ export default function AdminLayout({
   const menuItems = [
     { title: "Home", href: "/", icon: Home },
     { title: "Dashboard", href: "/admin", icon: Settings },
-    { title: "Image Manager", href: "/admin/images", icon: ImageIcon },
     { title: "Tours", href: "/admin/tours", icon: Calendar },
     { title: "Users", href: "/admin/users", icon: Users },
   ]

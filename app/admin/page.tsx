@@ -13,7 +13,8 @@ import {
   Plus,
   Image,
   Map,
-  Activity
+  Activity,
+  BookOpen
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -100,12 +101,6 @@ export default function AdminDashboard() {
             <Button variant="outline" className="bg-[#e9b824] text-[#1a5d1a] hover:bg-[#fed100]">
               <Plus className="w-4 h-4 mr-2" />
               New Tour
-            </Button>
-          </Link>
-          <Link href="/admin/images">
-            <Button variant="outline" className="bg-white border-[#1a5d1a] text-[#1a5d1a] hover:bg-[#1a5d1a]/10">
-              <Image className="w-4 h-4 mr-2" />
-              Manage Images
             </Button>
           </Link>
         </div>
@@ -227,12 +222,13 @@ export default function AdminDashboard() {
                     <span className="text-center">View Bookings</span>
                   </div>
                 </Link>
-                <Link href="/admin/images">
+                <Link href="/admin/blog">
                   <div className="flex flex-col items-center justify-center p-4 rounded-lg border hover:bg-[#1a5d1a]/10 transition-colors h-32">
-                    <Image className="mb-2 h-8 w-8 text-[#1a5d1a]" />
-                    <span className="text-center">Manage Images</span>
+                    <BookOpen className="mb-2 h-8 w-8 text-[#1a5d1a]" />
+                    <span className="text-center">Manage Blog</span>
                   </div>
                 </Link>
+
               </div>
             </CardContent>
           </Card>
