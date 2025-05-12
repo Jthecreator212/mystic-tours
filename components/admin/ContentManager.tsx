@@ -100,11 +100,9 @@ export default function ContentManager() {
         setError('The content management system needs to be set up. Please click the button below to create it.')
         console.error('JSON parse error:', parseError)
       }
-    } catch (err) {
-      // This is a network error or other fetch error
-      setTableExists(false)
-      setError('Error connecting to the content API. Please try again or set up the content system.')
-      console.error('Fetch error:', err)
+    } catch (fetchError) {
+      setError('Failed to connect to the server. Please try again.')
+      console.error('Fetch error:', fetchError)
     } finally {
       setIsLoading(false)
     }
@@ -116,37 +114,27 @@ export default function ContentManager() {
     setError(null)
     
     try {
-      // First attempt to create the table
       const response = await fetch('/api/admin/content/setup', {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       })
       
-      // Try to parse the response JSON, even if it's not OK
-      let responseData: any = {}
-      try {
-        responseData = await response.json()
-      } catch (parseError) {
-        console.error('JSON parse error:', parseError)
-        throw new Error('Failed to parse response from server')
-      }
+      const data = await response.json()
       
       if (!response.ok) {
-        throw new Error(responseData?.error || 'Failed to create content table')
+        throw new Error(data.error || 'Failed to create content table')
       }
       
-      // If we got here, the table was created successfully
-      setTableExists(true)
       setSuccess('Content management table created successfully!')
+      setTableExists(true)
       
-      // Fetch the content areas now that the table exists
-      await fetchContentAreas()
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(null), 3000)
-      
-    } catch (err) {
-      console.error('Error creating content table:', err)
+      // Fetch content areas after creating the table
+      fetchContentAreas()
+    } catch (error) {
       setError('Failed to create content table. Please try again.')
+      console.error('Error creating content table:', error)
     } finally {
       setIsCreatingTable(false)
     }
@@ -154,8 +142,9 @@ export default function ContentManager() {
   
   // Handle file selection for image update
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
+    if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0])
+      setPreviewUrl(URL.createObjectURL(e.target.files[0]))
       setHasChanges(true)
     }
   }
@@ -168,48 +157,57 @@ export default function ContentManager() {
     setError(null)
     
     try {
+      // Create form data for file upload
       const formData = new FormData()
+      
+      // Add the content area data
       formData.append('id', editingArea.id)
+      formData.append('area_key', editingArea.area_key)
       formData.append('name', editingArea.name)
       formData.append('description', editingArea.description)
       formData.append('alt_text', editingArea.alt_text)
+      formData.append('section', editingArea.section)
       
+      // Add the file if one was selected
       if (selectedFile) {
         formData.append('image', selectedFile)
+      } else {
+        formData.append('image_url', editingArea.image_url)
       }
       
+      // Send the update request
       const response = await fetch('/api/admin/content', {
         method: 'PUT',
-        body: formData
+        body: formData,
       })
       
-      let responseData: any = {}
-      try {
-        responseData = await response.json()
-      } catch (parseError) {
-        console.error('JSON parse error:', parseError)
-        throw new Error('Failed to parse response from server')
-      }
+      const data = await response.json()
       
       if (!response.ok) {
-        throw new Error(responseData?.error || 'Failed to update content area')
+        throw new Error(data.error || 'Failed to update content area')
       }
       
-      // Refresh the content areas
-      await fetchContentAreas()
+      // Update the content areas list with the updated item
+      setContentAreas(prev => 
+        prev.map(area => area.id === editingArea.id ? data : area)
+      )
       
-      // Reset editing state
+      // Reset the editing state
       setEditingArea(null)
       setSelectedFile(null)
+      setPreviewUrl(null)
       setHasChanges(false)
+      
+      // Show success message
       setSuccess('Content area updated successfully!')
       
       // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(null), 3000)
-      
-    } catch (err) {
-      console.error('Error updating content area:', err)
+      setTimeout(() => {
+        setSuccess(null)
+      }, 3000)
+    } catch (error) {
       setError('Failed to update content area. Please try again.')
+      console.error('Error updating content area:', error)
     } finally {
       setIsUploading(false)
     }
@@ -219,20 +217,21 @@ export default function ContentManager() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Content Manager
-            <Button 
-              variant="outline" 
+          <div className="flex justify-between items-center">
+            <CardTitle>Content Management</CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={fetchContentAreas}
               disabled={isLoading}
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className="w-4 h-4 mr-2" />
               Refresh
             </Button>
-          </CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="mb-6 flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1">
               <Input
                 placeholder="Search content areas..."
@@ -241,11 +240,8 @@ export default function ContentManager() {
                 className="w-full"
               />
             </div>
-            <div className="w-full sm:w-48">
-              <Select
-                value={selectedSection}
-                onValueChange={setSelectedSection}
-              >
+            <div className="w-full md:w-[180px]">
+              <Select value={selectedSection} onValueChange={setSelectedSection}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by section" />
                 </SelectTrigger>
@@ -260,234 +256,10 @@ export default function ContentManager() {
             </div>
           </div>
           
-          {success && (
-            <div className="bg-green-50 text-green-600 p-3 rounded-md mb-4">
-              {success}
-            </div>
-          )}
-          
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4">
-              {error}
-              {!tableExists && (
-                <div className="mt-2">
-                  <Button 
-                    onClick={createContentTable}
-                    disabled={isCreatingTable}
-                  >
-                    {isCreatingTable ? "Creating..." : "Create Content Management Table"}
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-          
-          {isLoading ? (
-            <div className="text-center py-8">
-              <RefreshCw className="w-8 h-8 mx-auto mb-4 animate-spin text-gray-400" />
-              <p>Loading content areas...</p>
-            </div>
-          ) : filteredAreas.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>No content areas found. Try adjusting your filters.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredAreas.map((area) => (
-                <Card key={area.id} className="overflow-hidden">
-                  <div className="relative aspect-video bg-gray-100">
-                    <img 
-                      src={area.image_url} 
-                      alt={area.alt_text || area.name} 
-                      className="object-cover w-full h-full"
-                    />
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="absolute top-2 right-2 bg-white bg-opacity-80 hover:bg-opacity-100"
-                          onClick={() => {
-                            setEditingArea(area)
-                            setPreviewUrl(null)
-                          }}
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[500px]">
-                        <DialogHeader>
-                          <DialogTitle>Edit Content Area</DialogTitle>
-                          <DialogDescription>
-                            Update the content area details and image.
-                          </DialogDescription>
-                        </DialogHeader>
-                        
-                        {editingArea && (
-                          <div className="mt-4">
-                            <div className="grid gap-4">
-                              <div className="relative aspect-video bg-gray-100 rounded-md overflow-hidden mb-4">
-                                <img 
-                                  src={previewUrl || editingArea.image_url} 
-                                  alt={editingArea.alt_text || editingArea.name}
-                                  className="object-cover w-full h-full"
-                                />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <label className="cursor-pointer bg-black bg-opacity-50 text-white p-2 rounded-md hover:bg-opacity-70 transition-all flex items-center gap-2">
-                                    <Image className="w-4 h-4" />
-                                    <span>Change Image</span>
-                                    <input 
-                                      type="file" 
-                                      className="hidden" 
-                                      accept="image/*"
-                                      onChange={handleFileSelect}
-                                    />
-                                  </label>
-                                </div>
-                              </div>
-                              
-                              <div className="space-y-1 mb-3">
-                                <Label className="text-xs font-medium text-gray-600">Name</Label>
-                                <Input 
-                                  className="border-gray-200 focus:border-gray-300 focus:ring-0 rounded text-sm" 
-                                  value={editingArea.name}
-                                  onChange={(e) => {
-                                    setEditingArea({...editingArea, name: e.target.value})
-                                    setHasChanges(true)
-                                  }}
-                                />
-                              </div>
-                              
-                              <div className="space-y-1 mb-3">
-                                <Label className="text-xs font-medium text-gray-600">Alt Text</Label>
-                                <Input 
-                                  className="border-gray-200 focus:border-gray-300 focus:ring-0 rounded text-sm" 
-                                  value={editingArea.alt_text}
-                                  onChange={(e) => {
-                                    setEditingArea({...editingArea, alt_text: e.target.value})
-                                    setHasChanges(true)
-                                  }}
-                                />
-                              </div>
-                              
-                              <div className="space-y-1 mb-3">
-                                <Label className="text-xs font-medium text-gray-600">Description</Label>
-                                <Textarea 
-                                  className="border-gray-200 focus:border-gray-300 focus:ring-0 rounded text-sm h-[80px] min-h-[80px]" 
-                                  value={editingArea.description}
-                                  onChange={(e) => {
-                                    setEditingArea({...editingArea, description: e.target.value})
-                                    setHasChanges(true)
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            
-                            <div className="flex justify-end items-center gap-3 mt-4 pt-3 border-t border-gray-100">
-                              {hasChanges && (
-                                <span className="text-xs text-amber-600">You have unsaved changes</span>
-                              )}
-                              <div className="flex gap-2">
-                                <Button 
-                                  variant="ghost"
-                                  className="text-xs h-8 px-3 text-gray-500 hover:text-gray-700"
-                                  onClick={() => {
-                                    setEditingArea(null)
-                                    setSelectedFile(null)
-                                    setHasChanges(false)
-                                  }}
-                                >
-                                  Cancel
-                                </Button>
-                                <Button 
-                                  onClick={handleSaveChanges}
-                                  disabled={!hasChanges || isUploading}
-                                  className="text-xs h-8 px-4 bg-primary hover:bg-primary/90 text-white rounded-md flex items-center gap-1"
-                                >
-                                  {isUploading ? (
-                                    <>
-                                      <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                      </svg>
-                                      Saving...
-                                    </>
-                                  ) : (
-                                    'Save Changes'
-                                  )}
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-medium">{area.name}</h3>
-                    <p className="text-sm text-gray-500 truncate">{area.description}</p>
-                    <div className="flex items-center mt-2 text-xs text-gray-400">
-                      <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                        {area.section}
-                      </span>
-                      <span className="ml-2 truncate">
-                        {area.area_key}
-                      </span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  )
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 flex items-start">
-              <div className="flex-1">{error}</div>
-              <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
-                <X size={18} />
-              </button>
-            </div>
-          )}
-          
-          {success && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4 flex items-start">
-              <div className="flex-1">{success}</div>
-              <button onClick={() => setSuccess(null)} className="text-green-500 hover:text-green-700">
-                <X size={18} />
-              </button>
-            </div>
-          )}
-          
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex-1">
-              <Input 
-                placeholder="Search content areas..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="w-full sm:w-48">
-              <Select value={selectedSection} onValueChange={setSelectedSection}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Section" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sections.map((section) => (
-                    <SelectItem key={section} value={section}>
-                      {section.charAt(0).toUpperCase() + section.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4">
-              {error}
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
+              <p>{error}</p>
+              
               {!tableExists && (
                 <div className="mt-2">
                   <Button 
@@ -552,42 +324,84 @@ export default function ContentManager() {
                         </div>
                         
                         {editingArea && (
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3 mb-3">
-                              <div className="space-y-1">
-                                <Label className="text-xs font-medium text-gray-600">Name</Label>
-                                <Input 
-                                  className="h-8 border-gray-200 focus:border-gray-300 focus:ring-0 rounded text-sm" 
-                                  value={editingArea.name}
-                                  onChange={(e) => setEditingArea({...editingArea, name: e.target.value})}
+                          <div className="space-y-2">
+                            <div className="relative aspect-video bg-gray-100 rounded-md overflow-hidden mb-3">
+                              <img 
+                                src={previewUrl || editingArea.image_url} 
+                                alt={editingArea.alt_text || editingArea.name} 
+                                className="object-cover w-full h-full"
+                              />
+                              <label className="absolute bottom-2 right-2">
+                                <div className="bg-white rounded-full p-2 shadow-md cursor-pointer">
+                                  <Image className="w-4 h-4" />
+                                </div>
+                                <input 
+                                  type="file" 
+                                  accept="image/*" 
+                                  className="hidden" 
+                                  onChange={handleFileSelect}
                                 />
-                              </div>
-                              <div className="space-y-1">
+                              </label>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1 mb-3">
                                 <Label className="text-xs font-medium text-gray-600">Section</Label>
                                 <Select 
                                   value={editingArea.section} 
-                                  onValueChange={(value) => setEditingArea({...editingArea, section: value})}
+                                  onValueChange={(value) => {
+                                    setEditingArea({...editingArea, section: value})
+                                    setHasChanges(true)
+                                  }}
                                 >
-                                  <SelectTrigger className="h-8 border-gray-200 focus:ring-0 text-sm">
-                                    <SelectValue />
+                                  <SelectTrigger className="border-gray-200 focus:border-gray-300 focus:ring-0 rounded text-sm h-[40px]">
+                                    <SelectValue placeholder="Select section" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {sections.filter(s => s !== "all").map((section) => (
-                                      <SelectItem key={section} value={section} className="text-sm">
+                                    {sections.filter(s => s !== 'all').map((section) => (
+                                      <SelectItem key={section} value={section}>
                                         {section.charAt(0).toUpperCase() + section.slice(1)}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
                               </div>
+                              
+                              <div className="space-y-1 mb-3">
+                                <Label className="text-xs font-medium text-gray-600">Key</Label>
+                                <Input 
+                                  className="border-gray-200 focus:border-gray-300 focus:ring-0 rounded text-sm h-[40px]" 
+                                  value={editingArea.area_key}
+                                  onChange={(e) => {
+                                    setEditingArea({...editingArea, area_key: e.target.value})
+                                    setHasChanges(true)
+                                  }}
+                                  disabled
+                                />
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-1 mb-3">
+                              <Label className="text-xs font-medium text-gray-600">Name</Label>
+                              <Input 
+                                className="border-gray-200 focus:border-gray-300 focus:ring-0 rounded text-sm h-[40px]" 
+                                value={editingArea.name}
+                                onChange={(e) => {
+                                  setEditingArea({...editingArea, name: e.target.value})
+                                  setHasChanges(true)
+                                }}
+                              />
                             </div>
                             
                             <div className="space-y-1 mb-3">
                               <Label className="text-xs font-medium text-gray-600">Alt Text</Label>
                               <Input 
-                                className="h-8 border-gray-200 focus:border-gray-300 focus:ring-0 rounded text-sm" 
+                                className="border-gray-200 focus:border-gray-300 focus:ring-0 rounded text-sm h-[40px]" 
                                 value={editingArea.alt_text}
-                                onChange={(e) => setEditingArea({...editingArea, alt_text: e.target.value})}
+                                onChange={(e) => {
+                                  setEditingArea({...editingArea, alt_text: e.target.value})
+                                  setHasChanges(true)
+                                }}
                               />
                             </div>
                             
@@ -596,10 +410,11 @@ export default function ContentManager() {
                               <Textarea 
                                 className="border-gray-200 focus:border-gray-300 focus:ring-0 rounded text-sm h-[40px] min-h-[40px]" 
                                 value={editingArea.description}
-                                onChange={(e) => setEditingArea({...editingArea, description: e.target.value})}
+                                onChange={(e) => {
+                                  setEditingArea({...editingArea, description: e.target.value})
+                                  setHasChanges(true)
+                                }}
                               />
-                            </div>
-                              </div>
                             </div>
                             
                             <div className="flex justify-end items-center gap-3 mt-4 pt-3 border-t border-gray-100">
