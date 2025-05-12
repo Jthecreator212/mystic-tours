@@ -4,7 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, CreditCard } from "lucide-react";
 
-export default function BookingPage({ params }: { params: { id: string } }) {
+type BookingPageProps = {
+  params: { id: string };
+  searchParams: Record<string, string | string[] | undefined>;
+};
+
+export default function BookingPage({ params }: BookingPageProps) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [guests, setGuests] = useState(2);
