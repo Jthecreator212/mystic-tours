@@ -66,7 +66,7 @@ export function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            <button className="hidden md:flex items-center justify-center group relative overflow-hidden rounded-md">
+            <Link href="/tours" className="hidden md:flex items-center justify-center group relative overflow-hidden rounded-md">
               <span className="absolute inset-0 bg-gradient-to-r from-[#e9b824] via-[#fed100] to-[#e9b824] opacity-80 group-hover:opacity-100 transition-opacity duration-300"></span>
               <span className="absolute inset-0 bg-gradient-to-r from-[#1a5d1a] via-[#009b3a] to-[#1a5d1a] opacity-0 group-hover:opacity-90 transition-opacity duration-500 scale-x-0 group-hover:scale-x-100 origin-left transform"></span>
               <span className="relative flex items-center px-6 py-3 font-bold tracking-wider uppercase text-[#1a5d1a] group-hover:text-[#e9b824] transition-colors duration-300">
@@ -76,7 +76,7 @@ export function Navbar() {
               </span>
               <span className="absolute bottom-0 left-0 right-0 h-1 bg-[#1a5d1a] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></span>
               <span className="absolute -inset-3 border-2 border-[#e9b824] opacity-0 group-hover:opacity-100 rounded-md scale-105 transition-all duration-300 blur-[2px] group-hover:blur-[3px] -z-10"></span>
-            </button>
+            </Link>
             
             {/* Profile Section */}
             <div className="relative" ref={profileRef}>
@@ -183,9 +183,9 @@ export function Navbar() {
               Contact
             </Link>
             <div className="flex items-center justify-center">
-              <button className="vintage-button" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/tours" className="vintage-button block text-center" onClick={() => setIsMenuOpen(false)}>
                 Book Now
-              </button>
+              </Link>
             </div>
             
             <Link
