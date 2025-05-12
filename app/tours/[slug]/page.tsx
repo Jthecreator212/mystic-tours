@@ -13,12 +13,7 @@ export function generateStaticParams() {
   }))
 }
 
-type TourPageProps = {
-  params: { slug: string };
-  searchParams: Record<string, string | string[] | undefined>;
-};
-
-export default function TourPage({ params }: TourPageProps) {
+export default function TourPage({ params }: { params: { slug: string } }) {
   const tour = tourData.find((tour) => tour.slug === params.slug)
 
   if (!tour) {
