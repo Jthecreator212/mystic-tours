@@ -1,23 +1,21 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { tourData } from "../../data/tours"
 import { CheckCircle, Calendar, Users, Clock, MapPin } from "lucide-react"
 import { use } from "react"
 
-export default function BookingConfirmationPage() {
+// Client component that uses search params
+function BookingConfirmationContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [tour, setTour] = useState<any>(null)
   
-  // Use React.use to safely access search params in Next.js 15
-  const resolvedSearchParams = use(Promise.resolve(searchParams))
-  
   useEffect(() => {
     // Get the tourId from the URL query parameters
-    const tourId = resolvedSearchParams.get("tourId")
+    const tourId = searchParams.get("tourId")
     
     if (!tourId) {
       // If no tourId is provided, redirect to the tours page
@@ -34,7 +32,7 @@ export default function BookingConfirmationPage() {
       // If tour not found, redirect to the tours page
       router.push("/tours")
     }
-  }, [resolvedSearchParams, router])
+  }, [searchParams, router])
   
   if (!tour) {
     return (
@@ -126,5 +124,24 @@ export default function BookingConfirmationPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Loading fallback
+function BookingConfirmationLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1a5d1a]"></div>
+    </div>
+  )
+}
+
+// Main page component with Suspense boundary
+export default function BookingConfirmationPage() {
+  
+  return (
+    <Suspense fallback={<BookingConfirmationLoading />}>
+      <BookingConfirmationContent />
+    </Suspense>
   )
 }
