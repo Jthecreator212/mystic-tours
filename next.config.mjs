@@ -1,4 +1,6 @@
-/** @type {import('next').NextConfig} */
+/**
+ * Main Next.js config. Consolidated from next.config.js and next.config.mjs
+ */
 const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
@@ -8,6 +10,19 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
   },
 }
 

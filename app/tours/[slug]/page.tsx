@@ -7,6 +7,8 @@ import { TourBookingForm } from "@/components/tour-booking-form"
 import { tourData } from "@/data/tours"
 import { notFound } from "next/navigation"
 
+// @ts-ignore - Next.js 15 type compatibility
+
 export function generateStaticParams() {
   return tourData.map((tour) => ({
     slug: tour.slug,
