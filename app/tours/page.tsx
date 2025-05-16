@@ -11,7 +11,7 @@ export default function ToursPage() {
       <PageHeader
         title="Our Tours"
         subtitle="Discover authentic experiences that connect you with the rhythm and soul of Jamaica"
-        imagePath="/images/tours-header.png"
+        imagePath="/uploads/header-58649a18-8e16-4a23-80f4-7bada79645f9.jpg"
       />
 
       <section className="container mx-auto px-4 py-16">

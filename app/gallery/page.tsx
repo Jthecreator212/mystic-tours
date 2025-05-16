@@ -6,9 +6,24 @@ import { Footer } from "@/components/footer"
 import { PageHeader } from "@/components/page-header"
 import Image from "next/image"
 import { galleryData } from "@/data/gallery"
+import { ImageEditOverlay } from "@/components/image-edit-overlay"
+import { useEditMode } from "@/context/edit-mode-context"
+import { uploadImage } from "@/lib/image-upload"
 
 export default function GalleryPage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
+  const { isEditMode } = useEditMode()
+  
+  // Handler for image changes
+  const handleGalleryImageChange = async (file: File, id?: string | number) => {
+    try {
+      console.log(`Updating gallery image ${id}`)
+      return await uploadImage(file, id, 'gallery')
+    } catch (error) {
+      console.error('Error updating gallery image:', error)
+      return URL.createObjectURL(file) // Fallback
+    }
+  }
 
   const filteredImages =
     selectedCategory === "all" ? galleryData : galleryData.filter((image) => image.category === selectedCategory)
@@ -27,7 +42,7 @@ export default function GalleryPage() {
       <PageHeader
         title="Gallery"
         subtitle="Glimpses of the authentic Jamaica experience"
-        imagePath="/images/gallery-header.png"
+        imagePath="/uploads/header-60aa23d5-542b-4048-b74d-d7c89c8edfff.jpg"
       />
 
       <section className="container mx-auto px-4 py-16">
@@ -51,13 +66,18 @@ export default function GalleryPage() {
           {filteredImages.map((image) => (
             <div key={image.id} className="group">
               <div className="relative h-72 overflow-hidden vintage-border">
-                <Image
-                  src={image.src || "/placeholder.svg"}
+                {/* Add ImageEditOverlay for editing */}
+                <ImageEditOverlay 
+                  key={`gallery-image-${image.id}-${image.src}`}
+                  imageSrc={image.src || "/placeholder.svg"}
                   alt={image.alt}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  galleryId={image.id}
+                  isAdmin={isEditMode}
+                  onImageChange={handleGalleryImageChange}
                 />
-                <div className="absolute inset-0 bg-[#1a5d1a]/0 group-hover:bg-[#1a5d1a]/60 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                
+                {/* Image hover overlay for information */}
+                <div className="absolute inset-0 bg-[#1a5d1a]/0 group-hover:bg-[#1a5d1a]/60 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 z-5">
                   <div className="text-center p-4">
                     <h3 className="text-xl text-[#e9b824] font-bold">{image.title}</h3>
                     <p className="text-[#f8ede3]">{image.location}</p>

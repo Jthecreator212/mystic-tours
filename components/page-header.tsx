@@ -1,34 +1,75 @@
+"use client"
+
 import Image from "next/image"
+import { useState } from "react"
+import { ImageEditOverlay } from "./image-edit-overlay"
+import { uploadImage } from "@/lib/image-upload"
+import { useEditMode } from "@/context/edit-mode-context"
+import { Edit } from "lucide-react"
 
 interface PageHeaderProps {
   title: string
   subtitle: string
   imagePath: string
+  isAdmin?: boolean
+  onImageChange?: (file: File) => Promise<string>
 }
 
-export function PageHeader({ title, subtitle, imagePath }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, imagePath, isAdmin = false, onImageChange }: PageHeaderProps) {
+  // Use the edit mode context
+  const { isEditMode } = useEditMode()
+  
+  // Handler for image changes
+  const handleImageChange = async (file: File) => {
+    try {
+      console.log('Uploading header image:', file.name);
+      
+      // First, upload the image - using empty string instead of null for itemId
+      const imageUrl = await uploadImage(file, '', 'header');
+      console.log('Header image uploaded successfully:', imageUrl);
+      
+      // If a custom handler was provided, use it
+      if (onImageChange) {
+        return await onImageChange(file);
+      }
+      
+      // Otherwise, return the uploaded image URL
+      return imageUrl;
+    } catch (error) {
+      console.error('Error uploading header image:', error);
+      // Return a fallback URL in case of error
+      return URL.createObjectURL(file);
+    }
+  }
+
   return (
     <div className="relative h-[50vh] min-h-[400px] overflow-hidden">
-      <div className="absolute inset-0">
-        <Image src={imagePath || "/placeholder.svg"} alt={title} fill priority className="object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#1a5d1a]/70 to-transparent"></div>
+      {/* Main image with edit overlay - moved to top level for better visibility */}
+      <div className="relative w-full h-full">
+        <ImageEditOverlay 
+          imageSrc={imagePath || "/placeholder.svg"} 
+          alt={title}
+          isAdmin={isAdmin || isEditMode} // Use either explicit isAdmin prop or global edit mode
+          onImageChange={handleImageChange}
+        />
+        
+        {/* Special edit indicator for headers when in edit mode */}
+        {isEditMode && (
+          <div className="absolute top-4 right-4 bg-white/90 text-[#1a5d1a] px-3 py-2 rounded-full shadow-lg z-30 animate-bounce-slow flex items-center gap-2">
+            <span className="font-bold">Edit Header</span>
+            <Edit className="w-5 h-5" />
+          </div>
+        )}
       </div>
+      
+      {/* No gradient overlay - removed as requested */}
 
-      <div className="relative container mx-auto px-4 h-full flex flex-col justify-center">
+      {/* Content */}
+      <div className="relative container mx-auto px-4 h-full flex flex-col justify-center z-20">
         <div className="max-w-2xl">
           <h1 className="text-5xl md:text-6xl text-[#e9b824] mb-4 drop-shadow-lg">{title}</h1>
           <p className="text-xl text-[#f8ede3] max-w-xl drop-shadow-md">{subtitle}</p>
         </div>
-      </div>
-
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-          <path
-            fill="#f8ede3"
-            fillOpacity="1"
-            d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,250.7C960,235,1056,181,1152,165.3C1248,149,1344,171,1392,181.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-          ></path>
-        </svg>
       </div>
     </div>
   )

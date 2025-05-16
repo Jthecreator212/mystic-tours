@@ -26,6 +26,7 @@ export default function AdminLayout({
     { title: "Home", href: "/", icon: Home },
     { title: "Dashboard", href: "/admin", icon: Settings },
     { title: "Tours", href: "/admin/tours", icon: Calendar },
+    { title: "Images", href: "/admin/images", icon: ImageIcon },
     { title: "Users", href: "/admin/users", icon: Users },
   ]
 

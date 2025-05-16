@@ -93,7 +93,7 @@ export function ImageManager({ images, onUpload, onDelete, onUpdate }: ImageMana
     return matchesSearch && matchesCategory
   })
 
-  const categories = ["all", "tour", "blog", "hero", "gallery"]
+  const categories = ["all", "tour", "hero", "gallery"]
 
   return (
     <div className="space-y-6">

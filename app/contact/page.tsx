@@ -11,7 +11,7 @@ export default function ContactPage() {
       <PageHeader
         title="Contact Us"
         subtitle="Get in touch to plan your perfect Jamaican adventure"
-        imagePath="/images/contact-header.png"
+        imagePath="/uploads/header-4dfe3ca2-163d-4626-8e21-8591da171a75.jpg"
       />
 
       <section className="container mx-auto px-4 py-16">

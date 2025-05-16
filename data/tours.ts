@@ -7,7 +7,7 @@ export const tourData = [
       "Journey through the birthplace of reggae music and experience the vibrant culture that inspired a global movement.",
     description:
       "Immerse yourself in the rich cultural heritage of Jamaica on this full-day tour that takes you through the birthplace of reggae music. Visit iconic music studios, meet local artists, and experience the vibrant culture that inspired a global movement. From the bustling streets of Kingston to the serene countryside, this tour offers an authentic glimpse into the heart and soul of Jamaica.",
-    image: "/images/tour-1.png",
+    image: "/uploads/tour-1-3c1c5637-8b25-48db-8f5a-3bcf8fc3f638.jpg",
     price: 149,
     duration: "Full Day (8 Hours)",
     groupSize: "2-12 people",
@@ -63,7 +63,7 @@ export const tourData = [
       "Discover hidden beaches, crystal clear waters, and the natural beauty that makes our island a true paradise.",
     description:
       "Escape to the pristine beaches and hidden coves of Jamaica's stunning coastline. This tour takes you off the beaten path to discover secluded beaches, crystal clear waters, and the natural beauty that makes our island a true paradise. Swim, snorkel, and relax in some of the most beautiful locations Jamaica has to offer.",
-    image: "/images/tour-2.png",
+    image: "/uploads/tour-2-54c86ae0-8cb1-43be-a1a8-0ed6f2b8b3ec.jpg",
     price: 129,
     duration: "8 Hours",
     groupSize: "2-10 people",
@@ -119,7 +119,7 @@ export const tourData = [
       "Explore authentic mountain villages, meet local artisans, and experience traditions passed down through generations.",
     description:
       "Journey into the heart of Jamaica's Blue Mountains to discover authentic villages, meet local artisans, and experience traditions passed down through generations. This immersive tour takes you away from tourist areas and into real communities where you'll learn about rural Jamaican life, sample locally grown coffee, and witness traditional crafts being made by skilled artisans.",
-    image: "/images/tour-3.png",
+    image: "/uploads/tour-3-ab5bcee3-9824-44b7-b088-ad752ff3f67b.jpg",
     price: 169,
     duration: "Full Day",
     groupSize: "2-8 people",

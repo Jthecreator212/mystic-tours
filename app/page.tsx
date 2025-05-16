@@ -8,6 +8,7 @@ import { Testimonial } from "@/components/testimonial"
 import { Footer } from "@/components/footer"
 import { Newsletter } from "@/components/newsletter"
 import { ChevronLeft, ChevronRight, Sun, Music, Palmtree, Compass } from "lucide-react"
+import { tourData } from "@/data/tours"
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -44,35 +45,15 @@ export default function Home() {
     return () => clearInterval(featureInterval)
   }, [features.length])
 
-  const tours = [
-    {
-      id: 1,
-      title: "Roots & Culture Experience",
-      description:
-        "Journey through the birthplace of reggae music and experience the vibrant culture that inspired a global movement.",
-      image: "/images/tour-1.png",
-      price: 149,
-      duration: "Full Day",
-    },
-    {
-      id: 2,
-      title: "Island Paradise Escape",
-      description:
-        "Discover hidden beaches, crystal clear waters, and the natural beauty that makes our island a true paradise.",
-      image: "/images/tour-2.png",
-      price: 129,
-      duration: "8 Hours",
-    },
-    {
-      id: 3,
-      title: "Mountain Village Trek",
-      description:
-        "Explore authentic mountain villages, meet local artisans, and experience traditions passed down through generations.",
-      image: "/images/tour-3.png",
-      price: 169,
-      duration: "Full Day",
-    },
-  ]
+  // Use the first 3 tours from the imported tourData
+  const tours = tourData.slice(0, 3).map(tour => ({
+    id: tour.id,
+    title: tour.title,
+    description: tour.shortDescription,
+    image: tour.image,
+    price: tour.price,
+    duration: tour.duration.split(' ')[0] + ' ' + tour.duration.split(' ')[1] // Format to match what's shown on cards
+  }))
 
   const testimonials = [
     {
@@ -81,7 +62,7 @@ export default function Home() {
       quote:
         "This tour changed my life! The guides were knowledgeable and the music was incredible. I felt the spirit of the island in my soul.",
       location: "New York, USA",
-      image: "/images/testimonial-1.png",
+      image: "/uploads/testimonial-1-595361c7-4a0a-46ec-92bd-33e21a2abdbc.png",
     },
     {
       id: 2,
@@ -89,23 +70,25 @@ export default function Home() {
       quote:
         "An authentic experience that goes beyond the typical tourist attractions. The local connections made this trip unforgettable.",
       location: "London, UK",
-      image: "/images/testimonial-2.png",
+      image: "/uploads/testimonial-2-fa4d60c7-4b04-4441-ae37-8b906164057d.png",
     },
   ]
 
   // Autoplay functionality
   useEffect(() => {
-    let interval
+    let interval: NodeJS.Timeout | undefined
     if (autoplay) {
       interval = setInterval(() => {
         setCurrentSlide((prev) => (prev === tours.length - 1 ? 0 : prev + 1))
       }, 5000)
     }
-    return () => clearInterval(interval)
+    return () => {
+      if (interval) clearInterval(interval)
+    }
   }, [autoplay, tours.length])
 
   // Pause autoplay when user interacts with carousel
-  const handleNavigation = (index) => {
+  const handleNavigation = (index: number) => {
     setCurrentSlide(index)
     setAutoplay(false)
     // Resume autoplay after 10 seconds of inactivity

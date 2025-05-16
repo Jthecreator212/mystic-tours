@@ -4,6 +4,9 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Star, Users, Clock, Heart, Calendar, ChevronRight } from "lucide-react"
+import { ImageEditOverlay } from "./image-edit-overlay"
+import { useEditMode } from "@/context/edit-mode-context"
+import { uploadImage } from "@/lib/image-upload"
 
 interface TourProps {
   tour: {
@@ -21,6 +24,21 @@ export function TourCard({ tour }: TourProps) {
   const [spotsLeft, setSpotsLeft] = useState<number | null>(null)
   const [rating, setRating] = useState<string | null>(null)
   const [reviewCount, setReviewCount] = useState<number | null>(null)
+  
+  // Use edit mode context
+  const { isEditMode } = useEditMode()
+  
+  // Handler for image changes
+  const handleImageChange = async (file: File) => {
+    try {
+      // Upload the image with tour ID for proper categorization
+      return await uploadImage(file, tour.id, 'tour')
+    } catch (error) {
+      console.error('Error uploading tour image:', error)
+      // Return a fallback URL in case of error
+      return URL.createObjectURL(file)
+    }
+  }
   
   // Generate random values only on the client side
   useEffect(() => {
@@ -48,12 +66,15 @@ export function TourCard({ tour }: TourProps) {
 
       {/* Visual hierarchy - Image is largest element */}
       <div className="relative h-56 overflow-hidden vintage-border">
-        <Image
-          src={tour.image || "/placeholder.svg"}
+        {/* Image edit functionality */}
+        <ImageEditOverlay 
+          imageSrc={tour.image || "/placeholder.svg"} 
           alt={tour.title}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-110"
+          tourId={tour.id}
+          isAdmin={isEditMode} 
+          onImageChange={handleImageChange}
         />
+        
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent h-20"></div>
         <div className="absolute bottom-3 left-3 bg-[#e9b824] text-[#1a5d1a] py-1 px-3 font-bold rounded-full flex items-center">
           <Clock size={14} className="mr-1" />

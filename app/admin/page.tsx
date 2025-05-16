@@ -210,6 +210,12 @@ export default function AdminDashboard() {
                     <span className="text-center">Add New Tour</span>
                   </div>
                 </Link>
+                <Link href="/admin/images">
+                  <div className="flex flex-col items-center justify-center p-4 rounded-lg border hover:bg-[#1a5d1a]/10 transition-colors h-32">
+                    <Image className="mb-2 h-8 w-8 text-[#1a5d1a]" />
+                    <span className="text-center">Manage Images</span>
+                  </div>
+                </Link>
                 <Link href="/admin/users">
                   <div className="flex flex-col items-center justify-center p-4 rounded-lg border hover:bg-[#1a5d1a]/10 transition-colors h-32">
                     <Users className="mb-2 h-8 w-8 text-[#1a5d1a]" />
@@ -222,12 +228,7 @@ export default function AdminDashboard() {
                     <span className="text-center">View Bookings</span>
                   </div>
                 </Link>
-                <Link href="/admin/blog">
-                  <div className="flex flex-col items-center justify-center p-4 rounded-lg border hover:bg-[#1a5d1a]/10 transition-colors h-32">
-                    <BookOpen className="mb-2 h-8 w-8 text-[#1a5d1a]" />
-                    <span className="text-center">Manage Blog</span>
-                  </div>
-                </Link>
+
 
               </div>
             </CardContent>

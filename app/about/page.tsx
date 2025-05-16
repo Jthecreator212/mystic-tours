@@ -1,17 +1,34 @@
+"use client"
+
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { PageHeader } from "@/components/page-header"
 import Image from "next/image"
 import { teamData } from "@/data/team"
+import { ImageEditOverlay } from "@/components/image-edit-overlay"
+import { useEditMode } from "@/context/edit-mode-context"
+import { uploadImage } from "@/lib/image-upload"
 
 export default function AboutPage() {
+  const { isEditMode } = useEditMode()
+  
+  // Handler for story image changes - similar to other working components
+  const handleStoryImageChange = async (file: File) => {
+    try {
+      // Upload the image with story ID for proper categorization
+      return await uploadImage(file, 'about', 'story')
+    } catch (error) {
+      console.error('Error uploading story image:', error)
+      return URL.createObjectURL(file)
+    }
+  }
   return (
     <main className="min-h-screen">
       <Navbar />
       <PageHeader
         title="About Us"
         subtitle="Our story, our mission, and the people behind Mystic Tours"
-        imagePath="/images/about-header.png"
+        imagePath="/uploads/header-2e8e4f0e-39ef-4acb-a9cf-ab839c72cb68.png"
       />
 
       <section className="container mx-auto px-4 py-16">
@@ -34,11 +51,13 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="relative h-[500px] vintage-border">
-            <Image
-              src="/images/about-story.png"
+            {/* Using the same pattern as TourCard for consistency */}
+            <ImageEditOverlay 
+              imageSrc="/uploads/story-about-414fd853-f365-4bb7-98cb-e69950aa9bd8.png" 
               alt="Vintage photo of Mystic Tours founder"
-              fill
-              className="object-cover"
+              storyId="about"
+              isAdmin={isEditMode} 
+              onImageChange={handleStoryImageChange}
             />
           </div>
         </div>
