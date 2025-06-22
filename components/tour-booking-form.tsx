@@ -1,11 +1,11 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
+import { createTourBooking } from "@/app/actions/booking-actions"
 
 interface TourBookingFormProps {
-  tourId: number
+  tourId: string
   tourName: string
 }
 
@@ -21,21 +21,35 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setError(null)
 
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      const result = await createTourBooking({
+        tourId,
+        tourName,
+        ...formData,
+      })
+
+      if (result.success) {
+        setIsSubmitted(true)
+      } else {
+        setError(result.message || "An error occurred. Please try again.")
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.")
+    } finally {
       setIsSubmitting(false)
-      setIsSubmitted(true)
-    }, 1500)
+    }
   }
 
   // Get today's date in YYYY-MM-DD format for min date
@@ -46,10 +60,17 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
       {isSubmitted ? (
         <div className="bg-[#1a5d1a]/10 border-2 border-[#1a5d1a] rounded-md p-4 text-center">
           <p className="text-[#1a5d1a] font-bold">Booking Request Received!</p>
-          <p>We'll contact you shortly to confirm your booking for {tourName}.</p>
+          <p>We'll contact you shortly to confirm your booking for {tourName} and discuss payment options.</p>
         </div>
       ) : (
         <div className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border-2 border-red-200 rounded-md p-4 text-center">
+              <p className="text-red-600 font-bold">Error</p>
+              <p className="text-red-600">{error}</p>
+            </div>
+          )}
+
           <div>
             <label htmlFor="date" className="block text-[#85603f] mb-1">
               Tour Date <span className="text-[#d83f31]">*</span>
@@ -127,6 +148,7 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
               value={formData.phone}
               onChange={handleChange}
               required
+              placeholder="+1 (555) 123-4567"
               className="w-full px-4 py-2 border-2 border-[#85603f] rounded-md focus:outline-none focus:border-[#1a5d1a]"
             />
           </div>
@@ -141,6 +163,7 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
               value={formData.specialRequests}
               onChange={handleChange}
               rows={3}
+              placeholder="Any dietary restrictions, accessibility needs, or special requests..."
               className="w-full px-4 py-2 border-2 border-[#85603f] rounded-md focus:outline-none focus:border-[#1a5d1a]"
             ></textarea>
           </div>

@@ -1,0 +1,14 @@
+{
+  "rules": [
+    {
+      "watch": [
+        "scripts/*.sql",
+        "supabase/migrations/*.sql"
+      ],
+      "update": [
+        "docs/DATABASE_SCHEMA.md"
+      ],
+      "description": "Whenever you make changes to migration or schema files, update the database documentation to reflect the current structure."
+    }
+  ]
+} 

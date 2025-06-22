@@ -174,6 +174,26 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.2), 0 2px 3px rgba(0, 0, 0, 0.2);
   }
 
+  .vintage-button-secondary {
+    @apply vintage-button; /* Inherit base styles */
+    background: linear-gradient(to bottom, #4e9f3d, #1a5d1a);
+    color: #f8ede3;
+    text-shadow: 0 1px 1px rgba(0,0,0, 0.4);
+  }
+
+  .vintage-button-secondary:hover {
+    background: linear-gradient(to bottom, var(--jamaica-green), var(--jamaica-yellow));
+    color: #000;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      inset 0 -3px 0 rgba(0, 0, 0, 0.2),
+      0 3px 5px rgba(0, 0, 0, 0.2),
+      0 7px 10px -3px rgba(0, 0, 0, 0.1),
+      0 0 15px var(--jamaica-green),
+      0 0 25px rgba(0, 155, 58, 0.5);
+  }
+
   .vintage-card {
     background-color: #f8ede3;
     border: 4px solid #e9b824;

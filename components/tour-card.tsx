@@ -5,13 +5,12 @@ import Link from "next/link"
 import Image from "next/image"
 import { Star, Users, Clock, Heart, Calendar, ChevronRight } from "lucide-react"
 import { ImageEditOverlay } from "./image-edit-overlay"
-import { useEditMode } from "@/context/edit-mode-context"
-import { uploadImage } from "@/lib/image-upload"
 
 interface TourProps {
   tour: {
     id: number
     title: string
+    slug: string
     description: string
     image: string
     price: number
@@ -25,21 +24,6 @@ export function TourCard({ tour }: TourProps) {
   const [rating, setRating] = useState<string | null>(null)
   const [reviewCount, setReviewCount] = useState<number | null>(null)
   
-  // Use edit mode context
-  const { isEditMode } = useEditMode()
-  
-  // Handler for image changes
-  const handleImageChange = async (file: File) => {
-    try {
-      // Upload the image with tour ID for proper categorization
-      return await uploadImage(file, tour.id, 'tour')
-    } catch (error) {
-      console.error('Error uploading tour image:', error)
-      // Return a fallback URL in case of error
-      return URL.createObjectURL(file)
-    }
-  }
-  
   // Generate random values only on the client side
   useEffect(() => {
     // Psychological principle: Scarcity - Generate random spots left (between 1-5)
@@ -52,6 +36,8 @@ export function TourCard({ tour }: TourProps) {
 
   return (
     <div className="vintage-card group hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col h-full relative">
+      <Link href={`/tours/${tour.slug}`} className="absolute inset-0 z-0" aria-label={`View details for ${tour.title}`} />
+      
       {/* Von Restorff Effect - Make important elements stand out */}
       {spotsLeft !== null && (
         <div className="absolute top-3 left-3 z-10 bg-[#d83f31] text-white py-1 px-3 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg">
@@ -70,9 +56,6 @@ export function TourCard({ tour }: TourProps) {
         <ImageEditOverlay 
           imageSrc={tour.image || "/placeholder.svg"} 
           alt={tour.title}
-          tourId={tour.id}
-          isAdmin={isEditMode} 
-          onImageChange={handleImageChange}
         />
         
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent h-20"></div>
@@ -134,8 +117,8 @@ export function TourCard({ tour }: TourProps) {
           </div>
 
           {/* Call to Action - High contrast, clear action */}
-          <div className="relative group">
-            <Link href={`/book/${tour.id}`} className="relative overflow-hidden rounded-md group-hover:scale-105 transition-transform duration-300 focus:outline-none" passHref legacyBehavior>
+          <div className="relative group z-10">
+            <Link href={`/tours/${tour.slug}`} className="relative overflow-hidden rounded-md group-hover:scale-105 transition-transform duration-300 focus:outline-none" passHref legacyBehavior>
   <a className="block focus:outline-none" tabIndex={0} aria-label={`Book tour: ${tour.title}`}>
     <span className="absolute inset-0 bg-gradient-to-r from-[#e9b824] via-[#fed100] to-[#e9b824] opacity-80 group-hover:opacity-100 transition-opacity duration-300"></span>
     <span className="absolute inset-0 bg-gradient-to-r from-[#1a5d1a] via-[#009b3a] to-[#1a5d1a] opacity-0 group-hover:opacity-90 transition-opacity duration-500 scale-x-0 group-hover:scale-x-100 origin-left transform"></span>

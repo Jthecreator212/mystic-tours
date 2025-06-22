@@ -75,6 +75,9 @@ const config: Config = {
         brown: "#85603f",
         red: "#d83f31",
       },
+      textShadow: {
+        'neon-glow': '0 0 5px #e9b824, 0 0 10px #e9b824, 0 0 15px #e9b824',
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -105,14 +108,30 @@ const config: Config = {
             transform: "translateY(-10px)",
           },
         },
+        "jumpy": {
+          "0%, 100%": { transform: "translateY(0) rotate(0)" },
+          "25%": { transform: "translateY(-10px) rotate(-2deg)" },
+          "75%": { transform: "translateY(5px) rotate(2deg)" },
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "bounce-slow": "bounce-slow 3s ease-in-out infinite",
+        "jumpy": "jumpy 1.5s ease-in-out infinite",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    function ({ addUtilities, theme }: { addUtilities: Function, theme: Function }) {
+      const newUtilities = {
+        '.text-neon-glow': {
+          textShadow: theme('textShadow.neon-glow'),
+        },
+      }
+      addUtilities(newUtilities, ['responsive', 'hover'])
+    }
+  ],
 }
 export default config

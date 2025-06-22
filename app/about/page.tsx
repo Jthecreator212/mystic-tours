@@ -4,24 +4,35 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { PageHeader } from "@/components/page-header"
 import Image from "next/image"
-import { teamData } from "@/data/team"
+import { supabase } from "@/lib/supabase"
 import { ImageEditOverlay } from "@/components/image-edit-overlay"
-import { useEditMode } from "@/context/edit-mode-context"
-import { uploadImage } from "@/lib/image-upload"
 
-export default function AboutPage() {
-  const { isEditMode } = useEditMode()
-  
-  // Handler for story image changes - similar to other working components
-  const handleStoryImageChange = async (file: File) => {
-    try {
-      // Upload the image with story ID for proper categorization
-      return await uploadImage(file, 'about', 'story')
-    } catch (error) {
-      console.error('Error uploading story image:', error)
-      return URL.createObjectURL(file)
-    }
+export const revalidate = 60;
+
+type TeamMember = {
+  id: number;
+  name: string;
+  role: string;
+  bio: string;
+  image_url: string;
+}
+
+async function getTeamMembers(): Promise<TeamMember[]> {
+  const { data, error } = await supabase
+    .from('team_members')
+    .select('*')
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching team members:', error);
+    return [];
   }
+  return data;
+}
+
+export default async function AboutPage() {
+  const teamMembers = await getTeamMembers();
+
   return (
     <main className="min-h-screen">
       <Navbar />
@@ -55,9 +66,6 @@ export default function AboutPage() {
             <ImageEditOverlay 
               imageSrc="/uploads/story-about-414fd853-f365-4bb7-98cb-e69950aa9bd8.png" 
               alt="Vintage photo of Mystic Tours founder"
-              storyId="about"
-              isAdmin={isEditMode} 
-              onImageChange={handleStoryImageChange}
             />
           </div>
         </div>
@@ -73,9 +81,35 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team section removed as requested */}
+      <section className="py-20 bg-[#f8ede3]">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl text-[#1a5d1a]">Meet Our Team</h2>
+            <p className="text-lg text-[#85603f] mt-2 max-w-2xl mx-auto">
+              Our guides are the heart of Mystic Tours—storytellers, historians, and cultural ambassadors dedicated to making your journey unforgettable.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {teamMembers.map((member) => (
+              <div key={member.id} className="vintage-card text-center p-6">
+                <div className="relative h-40 w-40 mx-auto mb-4">
+                  <Image
+                    src={member.image_url || '/placeholder.svg'}
+                    alt={`Portrait of ${member.name}`}
+                    layout="fill"
+                    className="rounded-full object-cover border-4 border-[#e9b824]"
+                  />
+                </div>
+                <h3 className="text-2xl font-playfair text-[#1a5d1a]">{member.name}</h3>
+                <p className="text-[#d83f31] font-bold mb-2">{member.role}</p>
+                <p className="text-[#85603f] text-sm">{member.bio}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </main>
-  )
+  );
 }

@@ -7,23 +7,9 @@ import { PageHeader } from "@/components/page-header"
 import Image from "next/image"
 import { galleryData } from "@/data/gallery"
 import { ImageEditOverlay } from "@/components/image-edit-overlay"
-import { useEditMode } from "@/context/edit-mode-context"
-import { uploadImage } from "@/lib/image-upload"
 
 export default function GalleryPage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
-  const { isEditMode } = useEditMode()
-  
-  // Handler for image changes
-  const handleGalleryImageChange = async (file: File, id?: string | number) => {
-    try {
-      console.log(`Updating gallery image ${id}`)
-      return await uploadImage(file, id, 'gallery')
-    } catch (error) {
-      console.error('Error updating gallery image:', error)
-      return URL.createObjectURL(file) // Fallback
-    }
-  }
 
   const filteredImages =
     selectedCategory === "all" ? galleryData : galleryData.filter((image) => image.category === selectedCategory)
@@ -71,9 +57,6 @@ export default function GalleryPage() {
                   key={`gallery-image-${image.id}-${image.src}`}
                   imageSrc={image.src || "/placeholder.svg"}
                   alt={image.alt}
-                  galleryId={image.id}
-                  isAdmin={isEditMode}
-                  onImageChange={handleGalleryImageChange}
                 />
                 
                 {/* Image hover overlay for information */}
