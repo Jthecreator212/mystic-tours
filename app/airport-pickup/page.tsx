@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { PageHeader } from "@/components/page-header"
-import { AirportPickupForm } from "@/components/airport-pickup-form"
+import { AirportPickupFormLoader } from "@/components/airport-pickup-form-loader"
 
 export const revalidate = 60;
 
@@ -23,7 +23,7 @@ export default function AirportPickupPage() {
                 Simple, flat-rate pricing of <span className="font-bold text-[#d83f31]">$75.00</span> for a private, comfortable ride from Montego Bay Airport (MBJ) to your destination.
               </p>
             </div>
-            <AirportPickupForm />
+            <AirportPickupFormLoader />
         </div>
       </section>
 

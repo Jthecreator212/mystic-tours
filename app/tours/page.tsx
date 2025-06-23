@@ -52,7 +52,7 @@ export default async function ToursPage() {
 
       <section className="bg-[#1a5d1a] py-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl text-[#e9b824] mb-4 underline text-neon-glow animate-jumpy">Custom Tours / Transport Available</h2>
+          <h2 className="text-4xl text-[#e9b824] mb-4 font-bold [text-shadow:_0_0_8px_theme(colors.yellow.300),_0_0_2px_theme(colors.yellow.300)]">Custom Tours / Transport Available</h2>
           <p className="text-xl text-[#f8ede3] max-w-3xl mx-auto mb-8">
             Looking for something specific? We can create a custom tour experience or provide transport to your desired destination.
           </p>
