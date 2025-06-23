@@ -23,11 +23,15 @@ import { format } from "date-fns"
 import { createAirportPickupBooking } from "@/app/actions/airport-pickup-actions"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { airportPickupSchema } from "@/lib/form-schemas"
+import { AirportPickupConfirmationDialog } from "./airport-pickup-confirmation-dialog"
 
 export function AirportPickupForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState("")
-  const [isError, setIsError] = useState(false);
+  const [isError, setIsError] = useState(false)
+  const [showConfirmation, setShowConfirmation] = useState(false)
+  const [bookingResult, setBookingResult] = useState<any>(null)
+  const [currentFormValues, setCurrentFormValues] = useState<any>(null)
 
   const form = useForm<z.infer<typeof airportPickupSchema>>({
     resolver: zodResolver(airportPickupSchema),
@@ -107,7 +111,9 @@ export function AirportPickupForm() {
 
       if (result.success) {
         console.log("✅ Success!");
-        setSubmitMessage(result.message);
+        setCurrentFormValues(values);
+        setBookingResult(result);
+        setShowConfirmation(true);
         // Reset fields individually to maintain type safety
         const currentServiceType = form.getValues("service_type");
         form.setValue("customer_name", "");
@@ -139,9 +145,10 @@ export function AirportPickupForm() {
   }
 
   return (
-    <div className="bg-white/50 p-8 rounded-2xl shadow-lg border border-black/10 backdrop-blur-sm">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+    <>
+      <div className="bg-white/50 p-8 rounded-2xl shadow-lg border border-black/10 backdrop-blur-sm">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
           {/* Customer Information Section */}
           <div className="space-y-6">
@@ -379,5 +386,31 @@ export function AirportPickupForm() {
         </form>
       </Form>
     </div>
+    
+    {/* Confirmation Dialog */}
+    {showConfirmation && bookingResult && currentFormValues && (
+      <AirportPickupConfirmationDialog
+        isOpen={showConfirmation}
+        onClose={() => setShowConfirmation(false)}
+        bookingDetails={{
+          customerName: currentFormValues.customer_name,
+          customerEmail: currentFormValues.customer_email,
+          customerPhone: currentFormValues.customer_phone,
+          serviceType: currentFormValues.service_type,
+          passengers: currentFormValues.passengers,
+          flightNumber: currentFormValues.flight_number,
+          arrivalDate: currentFormValues.arrival_date,
+          arrivalTime: currentFormValues.arrival_time,
+          departureFlightNumber: currentFormValues.departure_flight_number,
+          departureDate: currentFormValues.departure_date,
+          departureTime: currentFormValues.departure_time,
+          dropoffLocation: currentFormValues.dropoff_location,
+          pickupLocation: currentFormValues.pickup_location,
+          totalAmount: getPrice(),
+          bookingId: bookingResult.bookingId || 'N/A'
+        }}
+      />
+    )}
+    </>
   )
 } 

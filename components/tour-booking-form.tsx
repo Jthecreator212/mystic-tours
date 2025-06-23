@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { createTourBooking } from "@/app/actions/booking-actions"
+import { BookingConfirmationDialog } from "./booking-confirmation-dialog"
 
 interface TourBookingFormProps {
   tourId: string
@@ -22,6 +23,8 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showConfirmation, setShowConfirmation] = useState(false)
+  const [bookingResult, setBookingResult] = useState<any>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -41,6 +44,8 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
       })
 
       if (result.success) {
+        setBookingResult(result)
+        setShowConfirmation(true)
         setIsSubmitted(true)
       } else {
         setError(result.message || "An error occurred. Please try again.")
@@ -56,13 +61,14 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
   const today = new Date().toISOString().split("T")[0]
 
   return (
-    <form onSubmit={handleSubmit}>
-      {isSubmitted ? (
-        <div className="bg-[#1a5d1a]/10 border-2 border-[#1a5d1a] rounded-md p-4 text-center">
-          <p className="text-[#1a5d1a] font-bold">Booking Request Received!</p>
-          <p>We'll contact you shortly to confirm your booking for {tourName} and discuss payment options.</p>
-        </div>
-      ) : (
+    <>
+      <form onSubmit={handleSubmit}>
+        {isSubmitted ? (
+          <div className="bg-[#1a5d1a]/10 border-2 border-[#1a5d1a] rounded-md p-4 text-center">
+            <p className="text-[#1a5d1a] font-bold">Booking Request Received!</p>
+            <p>We'll contact you shortly to confirm your booking for {tourName} and discuss payment options.</p>
+          </div>
+        ) : (
         <div className="space-y-4">
           {error && (
             <div className="bg-red-50 border-2 border-red-200 rounded-md p-4 text-center">
@@ -174,5 +180,24 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
         </div>
       )}
     </form>
+    
+    {/* Confirmation Dialog */}
+    {showConfirmation && bookingResult && (
+      <BookingConfirmationDialog
+        isOpen={showConfirmation}
+        onClose={() => setShowConfirmation(false)}
+        bookingDetails={{
+          tourName: tourName,
+          date: formData.date,
+          guests: formData.guests,
+          customerName: formData.name,
+          customerEmail: formData.email,
+          customerPhone: formData.phone,
+          bookingId: bookingResult.bookingId,
+          totalAmount: undefined // Will be calculated in the component if needed
+        }}
+      />
+    )}
+    </>
   )
 }

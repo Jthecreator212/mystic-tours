@@ -87,6 +87,7 @@ export async function createAirportPickupBooking(formData: z.infer<typeof airpor
   return {
     success: true,
     message: "Thank you for your booking! We will contact you shortly to confirm.",
+    bookingId: booking.id,
   }
 } 
 
