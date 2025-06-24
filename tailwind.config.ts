@@ -112,6 +112,16 @@ const config: Config = {
           "0%, 100%": { transform: "translateY(0) rotate(0)" },
           "25%": { transform: "translateY(-10px) rotate(-2deg)" },
           "75%": { transform: "translateY(5px) rotate(2deg)" },
+        },
+        "neon-pulse": {
+          "0%, 100%": { 
+            textShadow: "0 0 8px #fed100, 0 0 2px #fed100, 0 0 1px #e9b824",
+            filter: "brightness(1)"
+          },
+          "50%": { 
+            textShadow: "0 0 12px #fed100, 0 0 4px #fed100, 0 0 2px #e9b824, 0 0 20px rgba(254, 209, 0, 0.3)",
+            filter: "brightness(1.1)"
+          },
         }
       },
       animation: {
@@ -119,6 +129,7 @@ const config: Config = {
         "accordion-up": "accordion-up 0.2s ease-out",
         "bounce-slow": "bounce-slow 3s ease-in-out infinite",
         "jumpy": "jumpy 1.5s ease-in-out infinite",
+        "neon-pulse": "neon-pulse 2.5s ease-in-out infinite",
       },
     },
   },
