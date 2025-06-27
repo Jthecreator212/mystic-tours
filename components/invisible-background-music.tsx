@@ -17,6 +17,15 @@ export function InvisibleBackgroundMusic({
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
 
+  // Create multiple source formats for better compatibility
+  const getAudioSources = (baseSrc: string) => {
+    const baseName = baseSrc.replace(/\.[^/.]+$/, '') // Remove extension
+    return [
+      `${baseName}.mp3`,
+      `${baseName}.ogg`
+    ]
+  }
+
   // Create and configure audio element
   useEffect(() => {
     console.log('🎵 Initializing audio with src:', musicSrc)
@@ -28,22 +37,41 @@ export function InvisibleBackgroundMusic({
     audio.volume = volume
     audio.crossOrigin = 'anonymous'
     
-    // Test if URL is accessible first
-    fetch(musicSrc, { method: 'HEAD' })
-      .then(response => {
-        if (!response.ok) {
-          console.error('🎵 Audio file not accessible:', response.status, response.statusText)
-          setError(`File not found: ${response.status}`)
-          return
-        }
-        console.log('🎵 Audio file accessible, setting source')
-        audio.src = musicSrc
-      })
-      .catch(err => {
-        console.error('🎵 Failed to check audio file accessibility:', err)
-        setError(`Network error: ${err.message}`)
-      })
+    // Try multiple audio formats for better browser compatibility
+    const sources = getAudioSources(musicSrc)
+    let sourceIndex = 0
     
+    const tryNextSource = () => {
+      if (sourceIndex >= sources.length) {
+        console.error('🎵 All audio sources failed')
+        setError('No supported audio format found')
+        return
+      }
+      
+      const currentSrc = sources[sourceIndex]
+      console.log(`🎵 Trying audio source ${sourceIndex + 1}/${sources.length}:`, currentSrc)
+      
+      // Test if URL is accessible first
+      fetch(currentSrc, { method: 'HEAD' })
+        .then(response => {
+          if (!response.ok) {
+            console.warn(`🎵 Audio source ${sourceIndex + 1} not accessible:`, response.status, response.statusText)
+            sourceIndex++
+            tryNextSource()
+            return
+          }
+          console.log(`🎵 Audio source ${sourceIndex + 1} accessible, setting source`)
+          audio.src = currentSrc
+        })
+        .catch(err => {
+          console.warn(`🎵 Failed to check audio source ${sourceIndex + 1}:`, err.message)
+          sourceIndex++
+          tryNextSource()
+        })
+    }
+    
+    // Start trying sources
+    tryNextSource()
     audioRef.current = audio
 
     // Event listeners
@@ -66,10 +94,10 @@ export function InvisibleBackgroundMusic({
             errorMsg = 'Network error while loading audio'
             break
           case MediaError.MEDIA_ERR_DECODE:
-            errorMsg = 'Audio decoding error - file format may be unsupported'
+            errorMsg = 'Audio decoding error - trying next format'
             break
           case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-            errorMsg = 'Audio format not supported by browser'
+            errorMsg = 'Audio format not supported - trying next format'
             break
           default:
             errorMsg = `Audio error code: ${audioError.code}`
@@ -77,8 +105,21 @@ export function InvisibleBackgroundMusic({
         errorMsg += ` - ${audioError.message || 'No additional details'}`
       }
       
-      console.error('🎵 Background Music Error:', errorMsg)
-      setError(errorMsg)
+      console.warn('🎵 Audio source failed:', errorMsg)
+      
+      // Try next source on decode/format errors
+      if (audioError && (audioError.code === MediaError.MEDIA_ERR_DECODE || audioError.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED)) {
+        sourceIndex++
+        if (sourceIndex < sources.length) {
+          console.log('🎵 Trying next audio format...')
+          tryNextSource()
+        } else {
+          console.error('🎵 All audio formats failed')
+          setError('No compatible audio format found')
+        }
+      } else {
+        setError(errorMsg)
+      }
     }
     const handlePlay = () => {
       console.log('🎵 Audio started playing')
