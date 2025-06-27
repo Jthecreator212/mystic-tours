@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Poppins, Playfair_Display } from "next/font/google"
 import "./globals.css"
+import { InvisibleBackgroundMusic } from "@/components/invisible-background-music"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -33,6 +34,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.variable} ${playfair.variable} font-sans`}>
         {children}
+        <InvisibleBackgroundMusic musicSrc="/music/island-vibes-fixed.mp3" volume={0.12} />
       </body>
     </html>
   )

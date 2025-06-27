@@ -25,3 +25,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# music files (too large for GitHub)
+/public/music/*.mp3
+/public/music/*.mp4
+/public/music/*.wav
