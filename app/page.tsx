@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/navbar"
 import { Hero } from "@/components/hero"
+import { JamaicaSlideshow } from "@/components/jamaica-slideshow"
 import { TestimonialCarousel } from "@/components/testimonial-carousel"
 import { Footer } from "@/components/footer"
 import { Newsletter } from "@/components/newsletter"
@@ -55,6 +56,8 @@ export default async function Home() {
       <div className="bg-gradient-to-r from-[#1a5d1a]/80 to-transparent min-h-screen">
         <Navbar />
         <Hero />
+        
+        <JamaicaSlideshow />
 
         <section className="container mx-auto px-4 py-16 -mt-[5vh]">
           <div className="mb-20">
