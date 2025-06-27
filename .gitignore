@@ -27,6 +27,10 @@ yarn-error.log*
 next-env.d.ts
 
 # music files (too large for GitHub)
-/public/music/*.mp3
+/public/music/island-vibes.mp3
+/public/music/island-vibes-fixed.mp3
+/public/music/island-vibes-v2.mp3
 /public/music/*.mp4
 /public/music/*.wav
+# Allow web-optimized version
+!/public/music/island-vibes-web.mp3

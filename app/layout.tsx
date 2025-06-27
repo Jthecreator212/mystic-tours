@@ -34,7 +34,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.variable} ${playfair.variable} font-sans`}>
         {children}
-        <InvisibleBackgroundMusic musicSrc="/music/island-vibes-fixed.mp3" volume={0.12} />
+        <InvisibleBackgroundMusic musicSrc="/music/island-vibes-web.mp3" volume={0.12} />
       </body>
     </html>
   )
