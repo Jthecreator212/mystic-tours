@@ -1,9 +1,6 @@
 "use client"
 
-import Image from "next/image"
-import { useState } from "react"
 import { ImageEditOverlay } from "./image-edit-overlay"
-import { Edit } from "lucide-react"
 
 interface PageHeaderProps {
   title: string

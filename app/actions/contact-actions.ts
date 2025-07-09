@@ -86,7 +86,7 @@ async function sendContactNotification(data: ContactNotificationData) {
       }),
     });
 
-    const result = await response.json() as any;
+    const result = await response.json() as Record<string, unknown>;
 
     if (!result.ok) {
       throw new Error(`Telegram API error: ${result.description}`);
