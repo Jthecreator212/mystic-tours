@@ -8,9 +8,17 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "dist",
-    "noEmit": false
+    "noEmit": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "include": [
-    "scripts/**/*.ts"
+    "scripts/**/*.ts",
+    "app/**/*.ts",
+    "lib/**/*.ts",
+    "components/**/*.ts",
+    "types/**/*.ts"
   ]
 } 

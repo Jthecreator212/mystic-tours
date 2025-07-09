@@ -35,7 +35,7 @@ export async function uploadImage(
     `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
 
   // Upload to Supabase Storage
-  const { data, error } = await supabaseAdmin.storage
+  const { error } = await supabaseAdmin.storage
     .from(bucket)
     .upload(fileName, file, {
       upsert: true,
@@ -97,7 +97,7 @@ export async function createBucketIfNotExists(
   try {
     // Check if the bucket exists
     const { data: buckets } = await supabaseAdmin.storage.listBuckets();
-    const bucketExists = buckets.some((bucket) => bucket.name === bucketName);
+    const bucketExists = buckets?.some((bucket) => bucket.name === bucketName) || false;
 
     if (!bucketExists) {
       // Create the bucket

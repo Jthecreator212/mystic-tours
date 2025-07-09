@@ -78,7 +78,7 @@ async function sendNewsletterNotification(data: NewsletterNotificationData) {
       }),
     });
 
-    const result = await response.json();
+    const result = await response.json() as any;
 
     if (!result.ok) {
       throw new Error(`Telegram API error: ${result.description}`);

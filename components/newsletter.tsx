@@ -23,7 +23,7 @@ export function Newsletter() {
       } else {
         setError(result.message)
       }
-    } catch (error) {
+    } catch {
       setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -43,7 +43,7 @@ export function Newsletter() {
             <div className="bg-[#1a5d1a]/10 border-2 border-[#1a5d1a] rounded-lg p-6 max-w-xl mx-auto">
               <div className="text-[#1a5d1a] text-lg font-bold mb-2">🌴 Welcome to the tribe!</div>
               <p className="text-[#85603f] mb-4">
-                Thank you for subscribing! You'll receive exclusive deals, travel tips, and the latest updates on our amazing tours.
+                Thank you for subscribing! You&apos;ll receive exclusive deals, travel tips, and the latest updates on our amazing tours.
               </p>
               <button
                 onClick={() => setIsSubmitted(false)}

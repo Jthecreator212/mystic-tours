@@ -3,10 +3,10 @@
  */
 const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   images: {
     unoptimized: true,
@@ -27,12 +27,23 @@ const nextConfig = {
         hostname: 'media.istockphoto.com',
         pathname: '/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        pathname: '/**',
-      },
     ],
+  },
+  // Optimize for Windows development stability
+  experimental: {
+    turbo: {
+      // Reduce memory usage and process conflicts
+      memoryLimit: 4096,
+    },
+  },
+  // Webpack optimization for development
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.watchOptions = {
+        ignored: ['**/node_modules/**', '**/.git/**', '**/.next/**'],
+      }
+    }
+    return config
   },
 }
 

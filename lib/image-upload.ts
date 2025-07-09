@@ -139,14 +139,14 @@ export async function uploadImage(file: File, itemId?: string | number, itemType
       }
       
       return data.url;
-    } catch (fetchError: any) {
-      if (fetchError.name === 'AbortError') {
+    } catch (fetchError: unknown) {
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
         throw new Error('Upload request timed out after 30 seconds');
       }
       throw fetchError;
     }
-  } catch (error: any) {
-    console.error('Error uploading image:', error?.message || error);
+  } catch (error: unknown) {
+    console.error('Error uploading image:', error instanceof Error ? error.message : error);
     // Return a fallback URL or rethrow based on your error handling strategy
     throw error;
   }

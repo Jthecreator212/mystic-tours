@@ -181,11 +181,11 @@ export function UltraModernConfirmation({
           <div className="bg-gradient-to-r from-amber-50/90 to-yellow-50/90 backdrop-blur-xl border border-amber-200/40 rounded-2xl p-5 text-center">
             <div className="flex items-center justify-center gap-3 mb-3">
               <Heart className="w-5 h-5 text-amber-600 animate-pulse" />
-              <p className="text-sm font-bold text-amber-800">We've Got You Covered</p>
+                              <p className="text-sm font-bold text-amber-800">We&apos;ve Got You Covered</p>
             </div>
             <p className="text-sm text-amber-700">
               Confirmation sent to <span className="font-semibold">{bookingDetails.customerEmail}</span> 📧<br/>
-              <span className="font-medium">Questions? We're here 24/7! 💬</span>
+                              <span className="font-medium">Questions? We&apos;re here 24/7! 💬</span>
             </p>
           </div>
 

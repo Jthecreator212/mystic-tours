@@ -31,7 +31,7 @@ export function NextGenConfirmationDialog({
 }: NextGenConfirmationDialogProps) {
   const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, delay: number}>>([]);
   const [showCelebration, setShowCelebration] = useState(false);
-  const [pulseCount, setPulseCount] = useState(0);
+  const [, setPulseCount] = useState(0);
 
   // 2024 Trend: Celebration micro-interactions with staggered timing
   useEffect(() => {
@@ -257,7 +257,7 @@ export function NextGenConfirmationDialog({
           >
             <div className="flex items-center justify-center gap-2 mb-3">
               <Heart className="w-5 h-5 text-amber-600 animate-pulse" />
-              <p className="text-sm font-bold text-amber-800">We've Got You Covered</p>
+              <p className="text-sm font-bold text-amber-800">We&apos;ve Got You Covered</p>
             </div>
             <p className="text-sm text-amber-700 leading-relaxed">
               Confirmation details sent to <span className="font-semibold">{bookingDetails.customerEmail}</span> 📧<br/>

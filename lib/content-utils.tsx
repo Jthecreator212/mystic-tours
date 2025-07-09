@@ -131,6 +131,7 @@ export function ContentImage(props: ContentImageProps) {
 
   if (!content) {
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img 
         src={fallbackUrl || `https://placehold.co/800x600/4a7c59/ffffff?text=${encodeURIComponent(areaKey)}`}
         alt={areaKey.replace(/_/g, ' ')}
@@ -147,6 +148,7 @@ export function ContentImage(props: ContentImageProps) {
   const imageUrl = content.image_url + (content.image_url.includes('?') ? '&cb=' + cacheBuster : cacheBuster);
   
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img 
       src={imageUrl}
       alt={content.alt_text || content.name}

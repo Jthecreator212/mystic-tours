@@ -57,7 +57,7 @@ export function ContactForm() {
       } else {
         setError(result.message)
       }
-    } catch (error) {
+    } catch {
       setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -69,7 +69,7 @@ export function ContactForm() {
       {isSubmitted ? (
         <div className="bg-[#1a5d1a]/10 border-2 border-[#1a5d1a] rounded-md p-4 text-center">
           <p className="text-[#1a5d1a] font-bold">Thank you for your message!</p>
-          <p>We'll get back to you as soon as possible.</p>
+          <p>We&apos;ll get back to you as soon as possible.</p>
           <button
             type="button"
             onClick={() => setIsSubmitted(false)}

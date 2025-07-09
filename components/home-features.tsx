@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react";
 import Link from 'next/link';
 import { Map, Plane } from "lucide-react";
 
@@ -27,7 +26,7 @@ export function HomeFeatures() {
       <div className="container mx-auto px-4 text-center">
         <h2 className="text-4xl font-bold mb-4 text-[#e9b824] green-outline-heading">Our Services</h2>
         <p className="text-lg text-[#f8ede3] max-w-2xl mx-auto mb-12">
-          Whether you're seeking adventure or a smooth arrival, we have you covered.
+          Whether you&apos;re seeking adventure or a smooth arrival, we have you covered.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {services.map((service, index) => (

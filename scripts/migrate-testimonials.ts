@@ -1,11 +1,11 @@
-require('dotenv').config({ path: '.env' });
+require('dotenv').config({ path: '.env.local' });
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Supabase URL or service key is not defined in .env file');
+  throw new Error('Supabase URL or service key is not defined in .env.local file');
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);

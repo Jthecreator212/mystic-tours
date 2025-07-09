@@ -1,7 +1,5 @@
 "use client"
 
-import { Music, Palmtree, Mountain, Heart } from "lucide-react"
-import { useState, useEffect } from "react"
 import Link from "next/link"
 
 export function Hero() {

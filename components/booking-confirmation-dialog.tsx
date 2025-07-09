@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { CheckCircle, Calendar, Users, DollarSign, MapPin, Clock } from "lucide-react"
+import { CheckCircle, Calendar, Users, DollarSign, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface BookingConfirmationDialogProps {
@@ -93,7 +93,7 @@ export function BookingConfirmationDialog({
               {bookingDetails.tourName}
             </h3>
             <p className="text-xs text-[#85603f]">
-              We'll contact you shortly to confirm your booking and discuss payment options.
+              We&apos;ll contact you shortly to confirm your booking and discuss payment options.
             </p>
           </div>
 

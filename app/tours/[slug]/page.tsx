@@ -1,8 +1,7 @@
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { PageHeader } from "@/components/page-header"
-import { TourGallery } from "@/components/tour-gallery"
-import { TourItinerary } from "@/components/tour-itinerary"
+
 import { TourBookingForm } from "@/components/tour-booking-form"
 import { supabase } from "@/lib/supabase"
 import { notFound } from "next/navigation"
@@ -75,10 +74,11 @@ export default async function TourPage({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const tour = await getTourDetails(slug);
 
-  const galleryImages = tour.tour_gallery_images.map(img => ({
-    src: img.image_url,
-    alt: img.alt_text || tour.title
-  }));
+  // Gallery images for future use in image gallery component
+  // const galleryImages = tour.tour_gallery_images.map(img => ({
+  //   src: img.image_url,
+  //   alt: img.alt_text || tour.title
+  // }));
 
   return (
     <main className="min-h-screen">
@@ -94,7 +94,7 @@ export default async function TourPage({ params }: { params: Promise<{ slug: str
             </div>
 
             <div className="mb-8">
-              <h2 className="text-2xl text-[#1a5d1a] mb-4">What's Included</h2>
+              <h2 className="text-2xl text-[#1a5d1a] mb-4">What&apos;s Included</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {tour.tour_highlights.slice(0, 4).map((highlight) => (
                   <div key={highlight.id} className="flex items-start">

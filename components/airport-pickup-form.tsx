@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,13 +24,22 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { airportPickupSchema } from "@/lib/form-schemas"
 import { AirportPickupConfirmationDialog } from "./airport-pickup-confirmation-dialog"
 
+// Define proper types
+type AirportPickupFormData = z.infer<typeof airportPickupSchema>
+interface BookingResult {
+  success: boolean
+  message?: string
+  data?: Record<string, unknown>
+  bookingId?: string
+}
+
 export function AirportPickupForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState("")
   const [isError, setIsError] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
-  const [bookingResult, setBookingResult] = useState<any>(null)
-  const [currentFormValues, setCurrentFormValues] = useState<any>(null)
+  const [bookingResult, setBookingResult] = useState<BookingResult | null>(null)
+  const [currentFormValues, setCurrentFormValues] = useState<AirportPickupFormData | null>(null)
 
   const form = useForm<z.infer<typeof airportPickupSchema>>({
     resolver: zodResolver(airportPickupSchema),

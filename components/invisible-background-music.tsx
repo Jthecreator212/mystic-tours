@@ -12,9 +12,9 @@ export function InvisibleBackgroundMusic({
   volume = 0.12 
 }: InvisibleBackgroundMusicProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [, setIsPlaying] = useState(false)
   const [hasUserInteracted, setHasUserInteracted] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
 
   // Create multiple source formats for better compatibility
@@ -51,23 +51,9 @@ export function InvisibleBackgroundMusic({
       const currentSrc = sources[sourceIndex]
       console.log(`🎵 Trying audio source ${sourceIndex + 1}/${sources.length}:`, currentSrc)
       
-      // Test if URL is accessible first
-      fetch(currentSrc, { method: 'HEAD' })
-        .then(response => {
-          if (!response.ok) {
-            console.warn(`🎵 Audio source ${sourceIndex + 1} not accessible:`, response.status, response.statusText)
-            sourceIndex++
-            tryNextSource()
-            return
-          }
-          console.log(`🎵 Audio source ${sourceIndex + 1} accessible, setting source`)
-          audio.src = currentSrc
-        })
-        .catch(err => {
-          console.warn(`🎵 Failed to check audio source ${sourceIndex + 1}:`, err.message)
-          sourceIndex++
-          tryNextSource()
-        })
+      // Directly set the audio source - let the audio element handle loading
+      console.log(`🎵 Setting audio source ${sourceIndex + 1}`)
+      audio.src = currentSrc
     }
     
     // Start trying sources
@@ -81,7 +67,7 @@ export function InvisibleBackgroundMusic({
       setError(null)
     }
     const handleLoadedData = () => console.log('🎵 Audio data loaded')
-    const handleError = (e: Event) => {
+    const handleError = () => {
       const audioError = audio.error
       let errorMsg = 'Unknown audio error'
       
@@ -107,18 +93,14 @@ export function InvisibleBackgroundMusic({
       
       console.warn('🎵 Audio source failed:', errorMsg)
       
-      // Try next source on decode/format errors
-      if (audioError && (audioError.code === MediaError.MEDIA_ERR_DECODE || audioError.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED)) {
-        sourceIndex++
-        if (sourceIndex < sources.length) {
-          console.log('🎵 Trying next audio format...')
-          tryNextSource()
-        } else {
-          console.error('🎵 All audio formats failed')
-          setError('No compatible audio format found')
-        }
+      // Try next source on any error
+      sourceIndex++
+      if (sourceIndex < sources.length) {
+        console.log('🎵 Trying next audio format...')
+        tryNextSource()
       } else {
-        setError(errorMsg)
+        console.error('🎵 All audio formats failed')
+        setError('No compatible audio format found')
       }
     }
     const handlePlay = () => {
@@ -163,11 +145,12 @@ export function InvisibleBackgroundMusic({
       await audioRef.current.play()
       console.log('🎵 Background music started successfully')
       return true
-    } catch (err: any) {
-      console.error('🎵 Background music play failed:', err.name, '-', err.message)
+    } catch (err: unknown) {
+      const error = err as Error
+      console.error('🎵 Background music play failed:', error.name, '-', error.message)
       return false
     }
-  }, [])
+  }, [audioRef])
 
   // Handle user interaction
   const handleUserInteraction = useCallback(async (eventType: string) => {
@@ -187,6 +170,7 @@ export function InvisibleBackgroundMusic({
     document.removeEventListener('click', clickHandler)
     document.removeEventListener('keydown', keyHandler)
     document.removeEventListener('touchstart', touchHandler)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasUserInteracted, playMusic, retryCount])
 
   // Event handlers

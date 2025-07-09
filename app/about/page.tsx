@@ -45,16 +45,16 @@ export default async function AboutPage() {
           <div>
             <h2 className="text-4xl text-[#1a5d1a] mb-6">Our Story</h2>
             <p className="text-lg mb-4">
-              Mystic Tours was born from a deep love for Jamaica's rich cultural heritage and a desire to share
+              Mystic Tours was born from a deep love for Jamaica&apos;s rich cultural heritage and a desire to share
               authentic experiences with travelers from around the world.
             </p>
             <p className="text-lg mb-4">
               Founded in 1978 by Marcus Johnson, a local musician and cultural ambassador, our company began as a small
-              operation taking visitors to off-the-beaten-path music venues and cultural sites that weren't featured in
+              operation taking visitors to off-the-beaten-path music venues and cultural sites that weren&apos;t featured in
               typical tourist itineraries.
             </p>
             <p className="text-lg">
-              Over four decades later, we've grown into one of the island's most respected tour operators, but our
+              Over four decades later, we&apos;ve grown into one of the island&apos;s most respected tour operators, but our
               mission remains the same: to connect visitors with the true spirit, rhythm, and soul of Jamaica through
               immersive, authentic experiences.
             </p>
@@ -73,8 +73,8 @@ export default async function AboutPage() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl text-[#1a5d1a] mb-6">Our Mission</h2>
           <p className="text-xl text-[#85603f] max-w-3xl mx-auto">
-            "To preserve and share Jamaica's cultural heritage by creating authentic travel experiences that benefit
-            local communities, foster cultural understanding, and create lasting memories for our guests."
+            &quot;To preserve and share Jamaica&apos;s cultural heritage by creating authentic travel experiences that benefit
+            local communities, foster cultural understanding, and create lasting memories for our guests.&quot;
           </p>
         </div>
       </section>
@@ -84,7 +84,7 @@ export default async function AboutPage() {
           <div className="text-center mb-12">
             <h2 className="text-4xl text-[#1a5d1a]">Meet Our Team</h2>
             <p className="text-lg text-[#85603f] mt-2 max-w-2xl mx-auto">
-              Our guides are the heart of Mystic Tours—storytellers, historians, and cultural ambassadors dedicated to making your journey unforgettable.
+              Our guides are the heart of Mystic Tours&mdash;storytellers, historians, and cultural ambassadors dedicated to making your journey unforgettable.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

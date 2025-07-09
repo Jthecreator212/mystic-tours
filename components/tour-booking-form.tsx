@@ -24,7 +24,7 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showConfirmation, setShowConfirmation] = useState(false)
-  const [bookingResult, setBookingResult] = useState<any>(null)
+  const [bookingResult, setBookingResult] = useState<Record<string, unknown> | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -50,7 +50,7 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
       } else {
         setError(result.message || "An error occurred. Please try again.")
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
@@ -66,7 +66,7 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
         {isSubmitted ? (
           <div className="bg-[#1a5d1a]/10 border-2 border-[#1a5d1a] rounded-md p-4 text-center">
             <p className="text-[#1a5d1a] font-bold">Booking Request Received!</p>
-            <p>We'll contact you shortly to confirm your booking for {tourName} and discuss payment options.</p>
+            <p>We&apos;ll contact you shortly to confirm your booking for {tourName} and discuss payment options.</p>
           </div>
         ) : (
         <div className="space-y-4">
@@ -193,7 +193,7 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
           customerName: formData.name,
           customerEmail: formData.email,
           customerPhone: formData.phone,
-          bookingId: bookingResult.bookingId,
+          bookingId: bookingResult.bookingId as string,
           totalAmount: undefined // Will be calculated in the component if needed
         }}
       />

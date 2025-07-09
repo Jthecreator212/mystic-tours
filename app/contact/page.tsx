@@ -19,7 +19,7 @@ export default function ContactPage() {
           <div>
             <h2 className="text-4xl text-[#1a5d1a] mb-6">Get In Touch</h2>
             <p className="text-lg mb-8">
-              Have questions about our tours? Want to book a custom experience? We're here to help you plan the perfect
+              Have questions about our tours? Want to book a custom experience? We&apos;re here to help you plan the perfect
               Jamaican adventure.
             </p>
 

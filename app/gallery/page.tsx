@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { PageHeader } from "@/components/page-header"
-import Image from "next/image"
+
 import { galleryData } from "@/data/gallery"
 import { ImageEditOverlay } from "@/components/image-edit-overlay"
 

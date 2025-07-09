@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { CheckCircle, PlaneLanding, PlaneTakeoff, Users, DollarSign, MapPin, Calendar, Clock } from "lucide-react"
+import { CheckCircle, PlaneLanding, PlaneTakeoff, Users, DollarSign, MapPin, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface AirportPickupConfirmationDialogProps {
@@ -128,7 +128,7 @@ export function AirportPickupConfirmationDialog({
         }`}>
           <div className="text-center mb-3">
             <p className="text-xs text-[#85603f]">
-              We'll contact you shortly to confirm your pickup details and discuss payment options.
+              We&apos;ll contact you shortly to confirm your pickup details and discuss payment options.
             </p>
           </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogOverlay } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Plane, Calendar, Users, DollarSign, Hash, MapPin, Clock, Sparkles, Star, Heart } from "lucide-react";
+import { CheckCircle, Plane, Calendar, Users, DollarSign, Hash, Sparkles, Star, Heart } from "lucide-react";
 
 interface UltraModernConfirmationDialogProps {
   isOpen: boolean;
@@ -270,8 +270,8 @@ export function UltraModernConfirmationDialog({
               <p className="text-xs font-semibold text-amber-800">Smart Reminder</p>
             </div>
             <p className="text-xs text-amber-700 leading-relaxed">
-              We'll send you a confirmation email and WhatsApp reminder 24 hours before your {bookingDetails.type}. 
-              <span className="font-medium"> Questions? We're always here! 💬</span>
+              We&apos;ll send you a confirmation email and WhatsApp reminder 24 hours before your {bookingDetails.type}. 
+              <span className="font-medium"> Questions? We&apos;re always here! 💬</span>
             </p>
           </div>
 
