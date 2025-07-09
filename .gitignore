@@ -19,6 +19,11 @@ yarn-error.log*
 # env files
 .env*
 
+# admin credentials (never commit these)
+ADMIN_ACCESS.txt
+admin-quick-access.txt
+admin-credentials.txt
+
 # vercel
 .vercel
 
