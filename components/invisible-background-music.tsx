@@ -7,6 +7,17 @@ interface InvisibleBackgroundMusicProps {
   volume?: number
 }
 
+/**
+ * Invisible Background Music Component
+ * 
+ * Plays ambient background music that starts after the first user interaction
+ * to comply with browser autoplay policies. Handles multiple audio formats
+ * and gracefully manages browser security restrictions.
+ * 
+ * @param musicSrc - Base path to audio file (without extension)
+ * @param volume - Playback volume (0.0 to 1.0, default: 0.12)
+ */
+
 export function InvisibleBackgroundMusic({ 
   musicSrc, 
   volume = 0.12 
@@ -70,6 +81,7 @@ export function InvisibleBackgroundMusic({
     const handleError = () => {
       const audioError = audio.error
       let errorMsg = 'Unknown audio error'
+      let shouldTryNext = true
       
       if (audioError) {
         switch (audioError.code) {
@@ -91,16 +103,19 @@ export function InvisibleBackgroundMusic({
         errorMsg += ` - ${audioError.message || 'No additional details'}`
       }
       
-      console.warn('🎵 Audio source failed:', errorMsg)
+      // Only log if it's not a user interaction issue
+      console.log('🎵 Audio source issue:', errorMsg)
       
       // Try next source on any error
-      sourceIndex++
-      if (sourceIndex < sources.length) {
-        console.log('🎵 Trying next audio format...')
-        tryNextSource()
-      } else {
-        console.error('🎵 All audio formats failed')
-        setError('No compatible audio format found')
+      if (shouldTryNext) {
+        sourceIndex++
+        if (sourceIndex < sources.length) {
+          console.log('🎵 Trying next audio format...')
+          tryNextSource()
+        } else {
+          console.log('🎵 All audio formats attempted - waiting for user interaction')
+          setError('No compatible audio format found')
+        }
       }
     }
     const handlePlay = () => {
@@ -147,7 +162,15 @@ export function InvisibleBackgroundMusic({
       return true
     } catch (err: unknown) {
       const error = err as Error
-      console.error('🎵 Background music play failed:', error.name, '-', error.message)
+      
+      // Handle expected browser security restrictions gracefully
+      if (error.name === 'NotAllowedError') {
+        console.log('🎵 Waiting for user interaction to play music (browser security)')
+        return false
+      }
+      
+      // Log other unexpected errors
+      console.warn('🎵 Background music play issue:', error.name, '-', error.message)
       return false
     }
   }, [audioRef])
@@ -159,12 +182,30 @@ export function InvisibleBackgroundMusic({
     console.log(`🎵 User interaction detected: ${eventType}`)
     setHasUserInteracted(true)
     
-    const success = await playMusic()
-    if (!success && retryCount < 2) {
-      console.log(`🎵 Retrying music playback (attempt ${retryCount + 1})`)
-      setRetryCount(prev => prev + 1)
-      setTimeout(() => playMusic(), 1000)
-    }
+    // Small delay to ensure audio context is ready
+    setTimeout(async () => {
+      // Ensure audio is loaded before attempting to play
+      if (audioRef.current && audioRef.current.readyState >= 2) {
+        const success = await playMusic()
+        if (!success && retryCount < 2) {
+          console.log(`🎵 Retrying music playback (attempt ${retryCount + 1})`)
+          setRetryCount(prev => prev + 1)
+          setTimeout(() => playMusic(), 1000)
+        }
+      } else {
+        console.log('🎵 Audio not ready yet, waiting for load...')
+        // Wait for audio to be ready
+        const checkReady = setInterval(async () => {
+          if (audioRef.current && audioRef.current.readyState >= 2) {
+            clearInterval(checkReady)
+            await playMusic()
+          }
+        }, 500)
+        
+        // Clear interval after 10 seconds to prevent infinite waiting
+        setTimeout(() => clearInterval(checkReady), 10000)
+      }
+    }, 100)
     
     // Remove listeners after first attempt
     document.removeEventListener('click', clickHandler)
