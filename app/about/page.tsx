@@ -69,44 +69,6 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-[#e9b824] py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl text-[#1a5d1a] mb-6">Our Mission</h2>
-          <p className="text-xl text-[#85603f] max-w-3xl mx-auto">
-            &quot;To preserve and share Jamaica&apos;s cultural heritage by creating authentic travel experiences that benefit
-            local communities, foster cultural understanding, and create lasting memories for our guests.&quot;
-          </p>
-        </div>
-      </section>
-
-      <section className="py-20 bg-[#f8ede3]">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl text-[#1a5d1a]">Meet Our Team</h2>
-            <p className="text-lg text-[#85603f] mt-2 max-w-2xl mx-auto">
-              Our guides are the heart of Mystic Tours&mdash;storytellers, historians, and cultural ambassadors dedicated to making your journey unforgettable.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {teamMembers.map((member) => (
-              <div key={member.id} className="vintage-card text-center p-6">
-                <div className="relative h-40 w-40 mx-auto mb-4">
-                  <Image
-                    src={member.image_url || '/placeholder.svg'}
-                    alt={`Portrait of ${member.name}`}
-                    layout="fill"
-                    className="rounded-full object-cover border-4 border-[#e9b824]"
-                  />
-                </div>
-                <h3 className="text-2xl font-playfair text-[#1a5d1a]">{member.name}</h3>
-                <p className="text-[#d83f31] font-bold mb-2">{member.role}</p>
-                <p className="text-[#85603f] text-sm">{member.bio}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <Footer />
     </main>
   );

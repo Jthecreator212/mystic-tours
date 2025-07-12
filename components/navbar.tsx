@@ -4,12 +4,19 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Menu, X, Calendar, ChevronRight } from "lucide-react"
+import { usePathname } from "next/navigation"
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  // Determine background class: solid green except on home page
+  const navBgClass = pathname === "/" ? "bg-transparent" : "bg-[#1a5d1a]"
+  const borderClass = "border-b-4 border-[#e9b824]"
+  const navPositionClass = "absolute top-0 w-full z-50"
 
   return (
-    <nav className="bg-transparent border-b-4 border-[#e9b824] absolute top-0 w-full z-50">
+    <nav className={`${navBgClass} ${borderClass} ${navPositionClass}`}>
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-24">
           <Link href="/" className="flex items-center">
@@ -71,7 +78,7 @@ export function Navbar() {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-[#1a5d1a]/90 border-t-2 border-[#e9b824]">
+        <div className={`md:hidden ${pathname === "/" ? "bg-[#1a5d1a]/90" : "bg-[#1a5d1a]"} border-t-2 border-[#e9b824]`}>
           <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
             <Link
               href="/"
