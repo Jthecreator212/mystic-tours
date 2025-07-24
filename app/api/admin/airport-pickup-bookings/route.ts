@@ -52,10 +52,10 @@ async function sendAirportPickupNotification(data: AirportPickupNotificationData
       }),
     });
     const result = await response.json();
-    if (!result.ok) throw new Error(`Telegram API error: ${result.description}`);
+    if (!result.ok) throw new _error(`Telegram API _error: ${result.description}`);
     return { success: true, message: 'Telegram notification sent successfully' };
-  } catch (error) {
-    return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
+  } catch (_error) {
+    return { success: false, message: _error instanceof _error ? _error.message : 'Unknown _error' };
   }
 }
 
@@ -98,8 +98,8 @@ export async function POST(req: Request) {
     console.log('[API] Received body:', JSON.stringify(body));
     const parsedData = airportPickupSchema.safeParse(body);
     if (!parsedData.success) {
-      console.log('[API] Validation failed:', JSON.stringify(parsedData.error.flatten().fieldErrors));
-      return NextResponse.json({ error: 'Invalid form data', details: parsedData.error.flatten().fieldErrors }, { status: 400 });
+      console.log('[API] Validation failed:', JSON.stringify(parsedData._error.flatten().field_errors));
+      return NextResponse.json({ _error: 'Invalid form data', details: parsedData._error.flatten().field_errors }, { status: 400 });
     }
     const totalPrice = calculatePrice(parsedData.data.service_type);
     const dataToInsert = {
@@ -121,14 +121,14 @@ export async function POST(req: Request) {
       notes: parsedData.data.notes || null,
     };
     console.log('[API] Inserting into DB:', JSON.stringify(dataToInsert));
-    const { data: booking, error: bookingError } = await supabaseAdmin
+    const { data: booking, _error: booking_error } = await supabaseAdmin
       .from('airport_pickup_bookings')
       .insert([dataToInsert])
       .select()
       .single();
-    if (bookingError) {
-      console.log('[API] DB insert error:', bookingError.message);
-      return NextResponse.json({ error: 'Database error: Could not save your booking.' }, { status: 500 });
+    if (booking_error) {
+      console.log('[API] DB insert _error:', booking_error.message);
+      return NextResponse.json({ _error: 'Database _error: Could not save your booking.' }, { status: 500 });
     }
     console.log('[API] Booking inserted:', JSON.stringify(booking));
     await sendAirportPickupNotification({
@@ -141,24 +141,24 @@ export async function POST(req: Request) {
     });
     console.log('[API] Telegram notification sent');
     return NextResponse.json({ booking });
-  } catch (error) {
-    console.log('[API] Unexpected error:', error);
-    return NextResponse.json({ error: 'Unexpected error.' }, { status: 500 });
+  } catch (_error) {
+    console.log('[API] Unexpected _error:', _error);
+    return NextResponse.json({ _error: 'Unexpected _error.' }, { status: 500 });
   }
 }
 
 // GET: Return all airport pickup bookings
 export async function GET() {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, _error } = await supabaseAdmin
       .from('airport_pickup_bookings')
       .select('*')
       .order('created_at', { ascending: false });
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (_error) {
+      return NextResponse.json({ _error: _error.message }, { status: 500 });
     }
     return NextResponse.json({ bookings: data });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch airport pickup bookings.' }, { status: 500 });
+  } catch (_error) {
+    return NextResponse.json({ _error: 'Failed to fetch airport pickup bookings.' }, { status: 500 });
   }
 } 

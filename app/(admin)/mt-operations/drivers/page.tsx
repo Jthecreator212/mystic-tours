@@ -131,7 +131,7 @@ export default function DriversPage() {
   );
 }
 
-function AddDriverForm({ onSuccess, onCancel }: { onSuccess: (driver: any) => void; onCancel: () => void }) {
+function AddDriverForm({ onSuccess, onCancel }: { onSuccess: (driver: Record<string, unknown>) => void; onCancel: () => void }) {
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -279,7 +279,7 @@ function EditDriverForm({ driver, onSuccess, onCancel }: { driver: Driver; onSuc
         {data && data.jobs && data.jobs.length === 0 && <div className="text-[#85603f]">No assignments found.</div>}
         {data && data.jobs && data.jobs.length > 0 && (
           <ul className="divide-y divide-[#f8ede3]">
-            {data.jobs.map((job: any) => (
+            {data.jobs.map((job: Record<string, unknown>) => (
               <li key={job.id} className="py-2 flex items-center gap-3">
                 <span className="inline-block px-2 py-1 rounded text-xs font-bold" style={{ background: job.type === 'airport' ? '#e9b824' : '#388e3c', color: '#fff' }}>{job.type === 'airport' ? 'Airport' : 'Tour'}</span>
                 <span className="text-[#1a5d1a] font-semibold">{job.customer_name}</span>

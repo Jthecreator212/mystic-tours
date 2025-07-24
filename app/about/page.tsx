@@ -1,7 +1,7 @@
 import { Navbar } from '@/components/layout/navbar'
 import { Footer } from '@/components/layout/footer'
 import { PageHeader } from '@/components/layout/page-header'
-import Image from "next/image"
+
 import { supabase } from "@/lib/supabase"
 import { ImageEditOverlay } from "@/components/image-edit-overlay"
 
@@ -29,7 +29,7 @@ async function getTeamMembers(): Promise<TeamMember[]> {
 }
 
 export default async function AboutPage() {
-  const teamMembers = await getTeamMembers();
+  const _teamMembers = await getTeamMembers();
 
   return (
     <main className="min-h-screen">

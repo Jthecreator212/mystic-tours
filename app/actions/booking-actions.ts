@@ -92,7 +92,7 @@ interface NotificationData {
   specialRequests?: string;
 }
 
-async function sendTelegramNotification(data: NotificationData) {
+async function _sendTelegramNotification(data: NotificationData) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 

@@ -155,7 +155,7 @@ function EditAirportPickupBookingModal({ booking, open, onClose, onSave }: { boo
     setError(null);
 
     // Build payload with only required fields for the selected service_type
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       customer_name: form.customer_name,
       customer_email: form.customer_email,
       customer_phone: form.customer_phone,
@@ -290,7 +290,7 @@ function EditAirportPickupBookingModal({ booking, open, onClose, onSave }: { boo
   );
 }
 
-function CreateBookingModal({ open, onClose, onSave }: { open: boolean; onClose: () => void; onSave: (booking: any) => void }) {
+function CreateBookingModal({ open, onClose, onSave }: { open: boolean; onClose: () => void; onSave: (booking: Record<string, unknown>) => void }) {
   const [formType, setFormType] = useState<BookingType>("tour");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -800,8 +800,8 @@ function CreateBookingModal({ open, onClose, onSave }: { open: boolean; onClose:
 }
 
 // Add driver assignment modal
-function AssignDriverModal({ booking, open, onClose, onAssigned }: { booking: AdminBooking | null; open: boolean; onClose: () => void; onAssigned: (updated: AdminBooking, driver: any) => void }) {
-  const [drivers, setDrivers] = useState<any[]>([]);
+function AssignDriverModal({ booking, open, onClose, onAssigned }: { booking: AdminBooking | null; open: boolean; onClose: () => void; onAssigned: (updated: AdminBooking, driver: Record<string, unknown>) => void }) {
+  const [drivers, setDrivers] = useState<Record<string, unknown>[]>([]);
   const [selectedDriver, setSelectedDriver] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
@@ -917,11 +917,11 @@ function BookingsTable() {
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [_toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [editBooking, setEditBooking] = useState<AdminBooking | null>(null);
   const [creating, setCreating] = useState(false);
   const [assigningBooking, setAssigningBooking] = useState<AdminBooking | null>(null);
-  const [assignedDrivers, setAssignedDrivers] = useState<Record<string, any>>({});
+  const [assignedDrivers, setAssignedDrivers] = useState<Record<string, unknown>>({});
 
   // Search and filter state
   const [search, setSearch] = useState('');
@@ -1003,7 +1003,7 @@ function BookingsTable() {
           />
           <select
             value={typeFilter}
-            onChange={e => setTypeFilter(e.target.value as any)}
+            onChange={e => setTypeFilter(e.target.value as 'all' | 'tour' | 'airport')}
             className="border rounded px-2 py-2 text-sm focus:outline-none focus:border-[#388e3c]"
           >
             <option value="all">All Types</option>
@@ -1012,7 +1012,7 @@ function BookingsTable() {
           </select>
           <select
             value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value as any)}
+            onChange={e => setStatusFilter(e.target.value as 'all' | 'tour' | 'airport')}
             className="border rounded px-2 py-2 text-sm focus:outline-none focus:border-[#388e3c]"
           >
             <option value="all">All Statuses</option>

@@ -22,7 +22,7 @@ import { format } from "date-fns"
 import { createAirportPickupBooking } from "@/app/actions/airport-pickup-actions"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { airportPickupSchema } from '@/lib/schemas/form-schemas'
-import { AirportPickupConfirmationDialog } from "./airport-pickup-confirmation-dialog"
+import { AirportPickupConfirmationDialog } from "@/components/dialogs/airport-pickup-confirmation-dialog"
 
 // Define proper types
 type AirportPickupFormData = z.infer<typeof airportPickupSchema>

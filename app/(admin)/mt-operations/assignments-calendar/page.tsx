@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+
 import { Calendar, dateFnsLocalizer, Event } from "react-big-calendar";
 import { format } from "date-fns/format";
 import { parse } from "date-fns/parse";
@@ -42,9 +42,9 @@ const dummyEvents: Event[] = [
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function AssignmentsCalendarPage() {
-  const { data, error, isLoading, mutate } = useSWR('/api/admin/driver-assignments', fetcher, { refreshInterval: 10000 });
+  const { data, error, isLoading } = useSWR('/api/admin/driver-assignments', fetcher, { refreshInterval: 10000 });
 
-  const events: Event[] = (data?.assignments || dummyEvents).map((a: any) => ({
+  const events: Event[] = (data?.assignments || dummyEvents).map((a: Record<string, unknown>) => ({
     title: `Driver: ${a.driver_name} - ${a.booking_type === 'airport' ? 'Airport' : 'Tour'}: ${a.customer_name}`,
     start: new Date(a.date),
     end: new Date(a.date),
