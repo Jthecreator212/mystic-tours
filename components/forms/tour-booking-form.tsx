@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { createTourBooking } from "@/app/actions/booking-actions"
-import { BookingConfirmationDialog } from "./booking-confirmation-dialog"
+import { BookingConfirmationDialog } from "@/components/dialogs/booking-confirmation-dialog"
 
 interface TourBookingFormProps {
   tourId: string

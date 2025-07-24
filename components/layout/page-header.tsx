@@ -1,6 +1,6 @@
 "use client"
 
-import { ImageEditOverlay } from "./image-edit-overlay"
+import { ImageEditOverlay } from "@/components/image-edit-overlay"
 
 interface PageHeaderProps {
   title: string

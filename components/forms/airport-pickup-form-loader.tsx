@@ -34,7 +34,7 @@ function FormSkeleton() {
 }
 
 const AirportPickupForm = dynamic(
-  () => import('@/components/airport-pickup-form').then(mod => mod.AirportPickupForm),
+  () => import('./airport-pickup-form').then(mod => mod.AirportPickupForm),
   {
     ssr: false,
     loading: () => <FormSkeleton />,
