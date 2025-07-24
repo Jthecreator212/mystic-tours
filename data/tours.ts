@@ -1,6 +1,6 @@
 export const tourData = [
   {
-    id: 1,
+    id: "68d34942-50b5-42b0-9ed7-885c98c405c6",
     title: "Roots & Culture Experience",
     slug: "roots-culture-experience",
     shortDescription:
@@ -56,7 +56,7 @@ export const tourData = [
     ],
   },
   {
-    id: 2,
+    id: "e5d65a36-ace0-4d97-a512-715e1bee7974",
     title: "Island Paradise Escape",
     slug: "island-paradise-escape",
     shortDescription:
@@ -112,7 +112,7 @@ export const tourData = [
     ],
   },
   {
-    id: 3,
+    id: "5981f544-e31c-4ce9-a585-d52f0326aecb",
     title: "Mountain Village Trek",
     slug: "mountain-village-trek",
     shortDescription:
@@ -165,6 +165,172 @@ export const tourData = [
       { src: "/images/gallery/mountain-6.png", alt: "Medicinal herb garden" },
       { src: "/images/gallery/mountain-7.png", alt: "Craft workshop" },
       { src: "/images/gallery/mountain-8.png", alt: "Mountain hiking trail" },
+    ],
+  },
+  {
+    id: "33db20d5-96b8-45a3-be8c-4e603be2bef6",
+    title: "Music History Tour",
+    slug: "music-history-tour",
+    shortDescription:
+      "Explore the rich history of Jamaican music and its impact on global culture.",
+    description:
+      "Journey through the birthplace of reggae music and experience the vibrant culture that inspired a global movement. This tour takes you through the evolution of Jamaican music from mento and ska to reggae and dancehall, and explores its impact on global culture.",
+    image: "/uploads/tour-4-33db20d5-96b8-45a3-be8c-4e603be2bef6.jpg",
+    price: 129,
+    duration: "Full Day (8 Hours)",
+    groupSize: "2-12 people",
+    includes: ["Transportation", "Lunch", "Entrance fees", "Guide"],
+    departure: "Kingston, 9:00 AM",
+    languages: ["English", "Spanish"],
+    highlights: [
+      "Visit the Bob Marley Museum in Kingston",
+      "Tour Tuff Gong Recording Studio",
+      "Experience a live reggae performance",
+      "Meet local artists and musicians",
+      "Enjoy authentic Jamaican cuisine",
+      "Learn about Rastafarian culture and history",
+    ],
+    itinerary: [
+      {
+        title: "Morning: Kingston Cultural Tour",
+        description:
+          "The day begins with pickup from your hotel in Kingston. We'll visit the Bob Marley Museum, housed in the legendary musician's former residence. Here, you'll see personal artifacts, memorabilia, and learn about his life and impact on music worldwide. Next, we'll tour Tuff Gong Recording Studio, founded by Bob Marley in 1965, where you'll see how reggae music is produced.",
+      },
+      {
+        title: "Midday: Lunch & Local Markets",
+        description:
+          "Enjoy a delicious lunch featuring traditional Jamaican cuisine at a local restaurant. After lunch, we'll explore the vibrant markets of Kingston, where you can purchase local crafts, music, and artwork. You'll have the opportunity to meet local artisans and learn about their craft.",
+      },
+      {
+        title: "Afternoon: Music & Culture",
+        description:
+          "In the afternoon, we'll visit the Jamaica Music Museum to learn about the evolution of Jamaican music from mento and ska to reggae and dancehall. Later, we'll attend a workshop on Rastafarian culture, where you'll learn about its history, beliefs, and global influence.",
+      },
+      {
+        title: "Evening: Live Performance",
+        description:
+          "The tour concludes with a live reggae performance at a local venue, where you can experience the power and energy of Jamaica's most famous musical export. You'll be returned to your hotel by approximately 5:00 PM.",
+      },
+    ],
+    galleryImages: [
+      { src: "/images/gallery/roots-1.png", alt: "Bob Marley Museum" },
+      { src: "/images/gallery/roots-2.png", alt: "Recording studio session" },
+      { src: "/images/gallery/roots-3.png", alt: "Live reggae performance" },
+      { src: "/images/gallery/roots-4.png", alt: "Traditional Jamaican food" },
+      { src: "/images/gallery/roots-5.png", alt: "Kingston market" },
+      { src: "/images/gallery/roots-6.png", alt: "Rastafarian cultural center" },
+      { src: "/images/gallery/roots-7.png", alt: "Jamaican countryside" },
+      { src: "/images/gallery/roots-8.png", alt: "Local artisans" },
+    ],
+  },
+  {
+    id: "b5aff921-1556-485b-bda8-f0ff36071c9c",
+    title: "Food & Culture Experience",
+    slug: "food-culture-experience",
+    shortDescription:
+      "Experience the diverse flavors and culinary traditions of Jamaica.",
+    description:
+      "Discover the diverse flavors and culinary traditions of Jamaica on this food and culture experience. From traditional Jamaican dishes to modern fusion cuisine, this tour takes you on a gastronomic journey through the island's rich culinary heritage.",
+    image: "/uploads/tour-5-b5aff921-1556-485b-bda8-f0ff36071c9c.jpg",
+    price: 129,
+    duration: "Full Day (8 Hours)",
+    groupSize: "2-12 people",
+    includes: ["Transportation", "Lunch", "Entrance fees", "Guide"],
+    departure: "Kingston, 9:00 AM",
+    languages: ["English", "Spanish"],
+    highlights: [
+      "Visit local markets and restaurants",
+      "Sample a variety of Jamaican dishes",
+      "Learn about the history and culture behind each dish",
+      "Enjoy authentic Jamaican cuisine",
+      "Meet local chefs and food artisans",
+    ],
+    itinerary: [
+      {
+        title: "Morning: Kingston Food Tour",
+        description:
+          "The tour begins with a pickup from your hotel in Kingston. We'll visit local markets to sample traditional Jamaican dishes and ingredients. You'll learn about the history and culture behind each dish while meeting local chefs and food artisans.",
+      },
+      {
+        title: "Midday: Lunch & Cooking Class",
+        description:
+          "After exploring the markets, we'll have lunch at a local restaurant where you'll taste a variety of Jamaican dishes. After lunch, we'll head to a cooking class where you'll learn how to prepare some of the dishes you've tasted. You'll get to taste the dishes you've prepared and learn about the ingredients and cooking techniques.",
+      },
+      {
+        title: "Afternoon: Cultural Experience",
+        description:
+          "In the afternoon, we'll visit a cultural site related to the dishes you've tasted and learned about. This could be a local market, a historical site, or a cultural center. You'll learn about the history and culture behind the dishes and how they relate to the local community.",
+      },
+      {
+        title: "Evening: Farewell Dinner",
+        description:
+          "The tour concludes with a farewell dinner at a local restaurant where you'll taste a variety of Jamaican dishes. You'll have the opportunity to ask questions and learn more about the dishes and the culture behind them. You'll be returned to your hotel by approximately 5:00 PM.",
+      },
+    ],
+    galleryImages: [
+      { src: "/images/gallery/food-1.png", alt: "Local market" },
+      { src: "/images/gallery/food-2.png", alt: "Traditional Jamaican dishes" },
+      { src: "/images/gallery/food-3.png", alt: "Cooking class" },
+      { src: "/images/gallery/food-4.png", alt: "Cultural site" },
+      { src: "/images/gallery/food-5.png", alt: "Farewell dinner" },
+      { src: "/images/gallery/food-6.png", alt: "Local chefs" },
+      { src: "/images/gallery/food-7.png", alt: "Jamaican food culture" },
+      { src: "/images/gallery/food-8.png", alt: "Cultural heritage" },
+    ],
+  },
+  {
+    id: "4501b493-5e2c-499c-8626-1df1490a9ae4",
+    title: "Reggae Trail Adventure",
+    slug: "reggae-trail-adventure",
+    shortDescription:
+      "Experience the rich history and culture of reggae music through various locations across Jamaica.",
+    description:
+      "Experience the rich history and culture of reggae music through various locations across Jamaica on this adventure tour. From the birthplace of reggae music to modern dancehall, this tour takes you on a journey through the evolution of reggae music and its impact on Jamaican culture.",
+    image: "/uploads/tour-6-4501b493-5e2c-499c-8626-1df1490a9ae4.jpg",
+    price: 129,
+    duration: "Full Day (8 Hours)",
+    groupSize: "2-12 people",
+    includes: ["Transportation", "Lunch", "Entrance fees", "Guide"],
+    departure: "Kingston, 9:00 AM",
+    languages: ["English", "Spanish"],
+    highlights: [
+      "Visit iconic reggae music locations",
+      "Meet local musicians and artists",
+      "Experience the vibrant culture of reggae music",
+      "Enjoy authentic Jamaican cuisine",
+      "Learn about the history and impact of reggae music",
+    ],
+    itinerary: [
+      {
+        title: "Morning: Kingston Cultural Tour",
+        description:
+          "The day begins with pickup from your hotel in Kingston. We'll visit the Bob Marley Museum, housed in the legendary musician's former residence. Here, you'll see personal artifacts, memorabilia, and learn about his life and impact on music worldwide. Next, we'll tour Tuff Gong Recording Studio, founded by Bob Marley in 1965, where you'll see how reggae music is produced.",
+      },
+      {
+        title: "Midday: Lunch & Local Markets",
+        description:
+          "Enjoy a delicious lunch featuring traditional Jamaican cuisine at a local restaurant. After lunch, we'll explore the vibrant markets of Kingston, where you can purchase local crafts, music, and artwork. You'll have the opportunity to meet local artisans and learn about their craft.",
+      },
+      {
+        title: "Afternoon: Music & Culture",
+        description:
+          "In the afternoon, we'll visit the Jamaica Music Museum to learn about the evolution of Jamaican music from mento and ska to reggae and dancehall. Later, we'll attend a workshop on Rastafarian culture, where you'll learn about its history, beliefs, and global influence.",
+      },
+      {
+        title: "Evening: Live Performance",
+        description:
+          "The tour concludes with a live reggae performance at a local venue, where you can experience the power and energy of Jamaica's most famous musical export. You'll be returned to your hotel by approximately 5:00 PM.",
+      },
+    ],
+    galleryImages: [
+      { src: "/images/gallery/roots-1.png", alt: "Bob Marley Museum" },
+      { src: "/images/gallery/roots-2.png", alt: "Recording studio session" },
+      { src: "/images/gallery/roots-3.png", alt: "Live reggae performance" },
+      { src: "/images/gallery/roots-4.png", alt: "Traditional Jamaican food" },
+      { src: "/images/gallery/roots-5.png", alt: "Kingston market" },
+      { src: "/images/gallery/roots-6.png", alt: "Rastafarian cultural center" },
+      { src: "/images/gallery/roots-7.png", alt: "Jamaican countryside" },
+      { src: "/images/gallery/roots-8.png", alt: "Local artisans" },
     ],
   }
 ]

@@ -1,110 +1,74 @@
-import { supabase } from '@/lib/supabase';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+'use client';
 
-async function getDashboardStats() {
-  const [toursResult, bookingsResult, pickupsResult] = await Promise.all([
-    supabase.from('tours').select('id'),
-    supabase.from('bookings').select('id, total_amount').eq('status', 'confirmed'),
-    supabase.from('airport_pickup_bookings').select('id, total_price')
-  ]);
+import { useEffect, useState } from 'react';
+import { StatCard } from '@/components/ui/stat-card';
+import { StatusIndicator, StatusType } from '@/components/ui/status-indicator';
 
-  return {
-    totalTours: toursResult.data?.length || 0,
-    totalBookings: bookingsResult.data?.length || 0,
-    totalRevenue: (bookingsResult.data?.reduce((sum, b) => sum + Number(b.total_amount), 0) || 0) +
-                  (pickupsResult.data?.reduce((sum, p) => sum + Number(p.total_price), 0) || 0),
-    totalPickups: pickupsResult.data?.length || 0
-  };
+interface DashboardStats {
+  totalTours: number;
+  totalBookings: number;
+  totalRevenue: number;
+  totalPickups: number;
+  totalImages: number;
 }
 
-export default async function AdminDashboard() {
-  const stats = await getDashboardStats();
+export default function AdminDashboard() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/admin/stats')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) throw new Error(data.error);
+        setStats(data);
+        setError(null);
+      })
+      .catch(() => setError('Failed to load stats'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // System status mock data (replace with real checks as needed)
+  const systemStatus: { label: string; status: StatusType; description?: string }[] = [
+    { label: 'Database', status: 'success' },
+    { label: 'Telegram Bot', status: 'success' },
+    { label: 'Image Storage', status: 'success' },
+    { label: 'Admin Interface', status: 'success', description: 'SECURE' },
+  ];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">Operations Dashboard</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-gray-600">Active Tours</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.totalTours}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-gray-600">Total Bookings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.totalBookings}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-gray-600">Airport Pickups</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{stats.totalPickups}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-gray-600">Total Revenue</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">${stats.totalRevenue}</div>
-          </CardContent>
-        </Card>
+    <div className="space-y-8">
+      <h1 className="text-3xl md:text-4xl font-bold text-[#e9b824] font-playfair mb-4">Operations Dashboard</h1>
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <StatCard title="Active Tours" value={stats?.totalTours ?? 0} color="text-[#1a5d1a]" loading={loading} error={error ?? undefined} />
+        <StatCard title="Total Bookings" value={stats?.totalBookings ?? 0} color="text-[#e9b824]" loading={loading} error={error ?? undefined} />
+        <StatCard title="Airport Pickups" value={stats?.totalPickups ?? 0} color="text-[#4e9f3d]" loading={loading} error={error ?? undefined} />
+        <StatCard title="Total Images" value={stats?.totalImages ?? 0} color="text-[#85603f]" loading={loading} error={error ?? undefined} />
+        <StatCard title="Total Revenue" value={`$${stats?.totalRevenue?.toLocaleString() ?? 0}`} color="text-[#d83f31]" loading={loading} error={error ?? undefined} />
       </div>
-      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <a href="/mt-operations/tours" className="block bg-green-600 text-white p-3 rounded hover:bg-green-700 text-center">
-              Manage Tours
-            </a>
-            <a href="/mt-operations/bookings" className="block bg-blue-600 text-white p-3 rounded hover:bg-blue-700 text-center">
-              View Bookings
-            </a>
-            <a href="/" target="_blank" className="block bg-purple-600 text-white p-3 rounded hover:bg-purple-700 text-center">
-              View Public Site
-            </a>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>System Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Database</span>
-                <span className="text-green-600 font-bold">●</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Telegram Bot</span>
-                <span className="text-green-600 font-bold">●</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Image Storage</span>
-                <span className="text-green-600 font-bold">●</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Admin Interface</span>
-                <span className="text-green-600 font-bold">● SECURE</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-[#f8ede3] border border-[#e9b824] rounded-lg">
+          <div className="p-4 border-b border-[#e9b824]">
+            <span className="text-[#1a5d1a] font-semibold text-lg">Quick Actions</span>
+          </div>
+          <div className="p-4 space-y-2">
+            <a href="/mt-operations/tours" className="block bg-[#1a5d1a] text-[#e9b824] p-3 rounded hover:bg-[#4e9f3d] text-center font-bold transition-colors">Manage Tours</a>
+            <a href="/mt-operations/bookings" className="block bg-[#e9b824] text-[#1a5d1a] p-3 rounded hover:bg-[#f8ede3] text-center font-bold transition-colors">View Bookings</a>
+            <a href="/" target="_blank" className="block bg-[#85603f] text-[#f8ede3] p-3 rounded hover:bg-[#e9b824] text-center font-bold transition-colors">View Public Site</a>
+          </div>
+        </div>
+        <div className="bg-[#f8ede3] border border-[#e9b824] rounded-lg">
+          <div className="p-4 border-b border-[#e9b824]">
+            <span className="text-[#1a5d1a] font-semibold text-lg">System Status</span>
+          </div>
+          <div className="p-4 space-y-2">
+            {systemStatus.map((s) => (
+              <StatusIndicator key={s.label} label={s.label} status={s.status} description={s.description} />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { PageHeader } from "@/components/page-header"
+import { Navbar } from '@/components/layout/navbar'
+import { Footer } from '@/components/layout/footer'
+import { PageHeader } from '@/components/layout/page-header'
 import Image from "next/image"
 import { supabase } from "@/lib/supabase"
 import { ImageEditOverlay } from "@/components/image-edit-overlay"
@@ -37,7 +37,7 @@ export default async function AboutPage() {
       <PageHeader
         title="About Us"
         subtitle="Our story, our mission, and the people behind Mystic Tours"
-        imagePath="/uploads/header-2e8e4f0e-39ef-4acb-a9cf-ab839c72cb68.png"
+        imagePaths={["/uploads/header-2e8e4f0e-39ef-4acb-a9cf-ab839c72cb68.png"]}
       />
 
       <section className="container mx-auto px-4 py-16">

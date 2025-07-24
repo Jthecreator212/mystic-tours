@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { PageHeader } from "@/components/page-header"
+import { Navbar } from '@/components/layout/navbar'
+import { Footer } from '@/components/layout/footer'
+import { PageHeader } from '@/components/layout/page-header'
 
 import { galleryData } from "@/data/gallery"
 import { ImageEditOverlay } from "@/components/image-edit-overlay"
@@ -28,7 +28,7 @@ export default function GalleryPage() {
       <PageHeader
         title="Gallery"
         subtitle="Glimpses of the authentic Jamaica experience"
-        imagePath="/uploads/header-60aa23d5-542b-4048-b74d-d7c89c8edfff.jpg"
+        imagePaths={["/uploads/header-60aa23d5-542b-4048-b74d-d7c89c8edfff.jpg"]}
       />
 
       <section className="container mx-auto px-4 py-16">

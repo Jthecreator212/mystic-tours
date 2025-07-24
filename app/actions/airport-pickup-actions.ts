@@ -2,7 +2,7 @@
 
 import { z } from "zod"
 import { supabaseAdmin } from "@/lib/supabase"
-import { airportPickupSchema } from "@/lib/form-schemas"
+import { airportPickupSchema } from '@/lib/schemas/form-schemas'
 
 function calculatePrice(serviceType: "pickup" | "dropoff" | "both"): number {
   switch (serviceType) {
@@ -53,6 +53,7 @@ export async function createAirportPickupBooking(formData: z.infer<typeof airpor
     passengers: parsedData.data.passengers,
     total_price: totalPrice,
     status: 'pending',
+    notes: parsedData.data.notes || null,
   };
 
   console.log(" Inserting into Database:", dataToInsert);
@@ -78,6 +79,7 @@ export async function createAirportPickupBooking(formData: z.infer<typeof airpor
     ...parsedData.data,
     bookingId: booking.id,
     total_price: totalPrice,
+    notes: parsedData.data.notes || '',
   });
 
   if (!notificationResult.success) {
@@ -107,6 +109,7 @@ interface AirportNotificationData {
   passengers: number;
   bookingId: number;
   total_price: number;
+  notes: string;
 }
 
 async function sendAirportPickupNotification(data: AirportNotificationData) {
@@ -151,6 +154,10 @@ function formatAirportPickupMessage(data: AirportNotificationData): string {
   message += `🛠️ *Service Type:* ${data.service_type.charAt(0).toUpperCase() + data.service_type.slice(1)}\n`;
   message += `🧑‍🤝‍🧑 *Passengers:* ${data.passengers}\n`;
   message += `💰 *Total Price:* *${formattedPrice}*\n\n`;
+
+  if (data.notes) {
+    message += `📝 *Notes:* ${data.notes}\n\n`;
+  }
 
   if (data.service_type === 'pickup' || data.service_type === 'both') {
     message += `*Arrival Details*\n`;

@@ -1,7 +1,7 @@
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { PageHeader } from "@/components/page-header"
-import { AirportPickupFormLoader } from "@/components/airport-pickup-form-loader"
+import { Navbar } from '@/components/layout/navbar'
+import { Footer } from '@/components/layout/footer'
+import { PageHeader } from '@/components/layout/page-header'
+import { AirportPickupFormLoader } from '@/components/forms/airport-pickup-form-loader'
 
 export const revalidate = 60;
 
@@ -12,7 +12,7 @@ export default function AirportPickupPage() {
       <PageHeader
         title="Airport Pickup Service"
         subtitle="Start your Jamaican adventure the right way with our reliable Montego Bay Airport transfers."
-        imagePath="/images/gallery/paradise-6.png"
+        imagePaths={["/images/gallery/paradise-6.png"]}
       />
 
       <section className="container mx-auto px-4 py-16">

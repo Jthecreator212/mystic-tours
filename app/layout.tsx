@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Poppins, Playfair_Display } from "next/font/google"
 import "./globals.css"
-import { InvisibleBackgroundMusic } from "@/components/invisible-background-music"
+import { InvisibleBackgroundMusic } from '@/components/features/invisible-background-music'
 
 const poppins = Poppins({
   subsets: ["latin"],

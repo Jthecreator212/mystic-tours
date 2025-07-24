@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { AirportPickupConfirmationDialog } from "@/components/airport-pickup-confirmation-dialog"
-import { BookingConfirmationDialog } from "@/components/booking-confirmation-dialog"
-import { UltraModernConfirmation } from "@/components/ultra-modern-confirmation"
+import { AirportPickupConfirmationDialog } from '@/components/dialogs/airport-pickup-confirmation-dialog'
+import { BookingConfirmationDialog } from '@/components/dialogs/booking-confirmation-dialog'
+import { UltraModernConfirmation } from '@/components/dialogs/ultra-modern-confirmation'
 import { Button } from "@/components/ui/button"
 
 export default function ConfirmationDemoPage() {

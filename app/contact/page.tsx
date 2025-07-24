@@ -1,7 +1,7 @@
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { PageHeader } from "@/components/page-header"
-import { ContactForm } from "@/components/contact-form"
+import { Navbar } from '@/components/layout/navbar'
+import { Footer } from '@/components/layout/footer'
+import { PageHeader } from '@/components/layout/page-header'
+import { ContactForm } from '@/components/forms/contact-form'
 import { MapPin, Phone, Mail, Clock } from "lucide-react"
 
 export default function ContactPage() {
@@ -11,7 +11,7 @@ export default function ContactPage() {
       <PageHeader
         title="Contact Us"
         subtitle="Get in touch to plan your perfect Jamaican adventure"
-        imagePath="/uploads/header-4dfe3ca2-163d-4626-8e21-8591da171a75.jpg"
+        imagePaths={["/uploads/header-4dfe3ca2-163d-4626-8e21-8591da171a75.jpg"]}
       />
 
       <section className="container mx-auto px-4 py-16">

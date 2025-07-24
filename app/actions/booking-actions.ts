@@ -66,22 +66,6 @@ export async function createTourBooking(formData: z.infer<typeof bookingFormSche
       }
     }
 
-    const notificationResult = await sendTelegramNotification({
-      bookingId: booking.id,
-      tourName: parsedData.data.tourName,
-      customerName: parsedData.data.name,
-      customerPhone: parsedData.data.phone,
-      customerEmail: parsedData.data.email,
-      bookingDate: parsedData.data.date,
-      numberOfGuests: parsedData.data.guests,
-      totalAmount: totalAmount,
-      specialRequests: parsedData.data.specialRequests,
-    });
-
-    if (!notificationResult.success) {
-      console.error("Telegram notification failed:", notificationResult.message);
-    }
-
     return {
       success: true,
       message: "Thank you for your booking! We will contact you shortly to confirm and discuss payment options.",

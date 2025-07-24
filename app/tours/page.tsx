@@ -1,7 +1,7 @@
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { TourCard } from "@/components/tour-card"
-import { PageHeader } from "@/components/page-header"
+import { Navbar } from '@/components/layout/navbar'
+import { Footer } from '@/components/layout/footer'
+import { TourCard } from '@/components/features/tour-card'
+import { PageHeader } from '@/components/layout/page-header'
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
 
@@ -40,7 +40,9 @@ export default async function ToursPage() {
       <PageHeader
         title="Our Tours"
         subtitle="Discover authentic experiences that connect you with the rhythm and soul of Jamaica"
-        imagePath="/images/tours-header.png"
+        imagePaths={[]}
+        slideshow={false}
+        aspectRatio="16/9"
       />
 
       <section className="container mx-auto px-4 py-16">

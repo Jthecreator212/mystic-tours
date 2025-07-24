@@ -1,8 +1,8 @@
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { PageHeader } from "@/components/page-header"
+import { Navbar } from '@/components/layout/navbar'
+import { Footer } from '@/components/layout/footer'
+import { PageHeader } from '@/components/layout/page-header'
 
-import { TourBookingForm } from "@/components/tour-booking-form"
+import { TourBookingForm } from '@/components/forms/tour-booking-form'
 import { supabase } from "@/lib/supabase"
 import { notFound } from "next/navigation"
 import type { Metadata } from 'next'

@@ -1,4 +1,6 @@
 import { redirect } from 'next/navigation';
+import AdminSidebar from '@/components/admin/admin-navbar';
+import AdminBreadcrumb from '@/components/ui/admin-breadcrumb';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   if (process.env.ADMIN_ENABLED !== 'true') {
@@ -6,23 +8,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <nav className="bg-gray-800 text-white p-4">
-        <div className="flex justify-between items-center">
-          <h1 className="text-xl font-bold">Mystic Tours Operations</h1>
-          <div className="flex space-x-4">
-            <a href="/mt-operations" className="hover:text-green-400">Dashboard</a>
-            <a href="/mt-operations/tours" className="hover:text-green-400">Tours</a>
-            <a href="/mt-operations/bookings" className="hover:text-green-400">Bookings</a>
-            <form action="/api/admin/auth" method="DELETE" className="inline">
-              <button className="bg-red-600 px-4 py-2 rounded hover:bg-red-700">
-                Logout
-              </button>
-            </form>
-          </div>
-        </div>
-      </nav>
-      <main className="p-6">
+    <div className="min-h-screen bg-[#f8ede3] flex">
+      <AdminSidebar />
+      <main className="flex-1 p-4 md:p-6 text-[#85603f] transition-all duration-200 overflow-y-auto h-screen">
+        <AdminBreadcrumb />
         {children}
       </main>
     </div>

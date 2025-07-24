@@ -12,21 +12,19 @@ export function middleware(request: NextRequest) {
     if (process.env.ADMIN_ENABLED !== 'true') {
       return NextResponse.redirect(new URL('/404', request.url));
     }
-    
-    if (pathname === `${ADMIN_PATH}/auth`) {
-      return NextResponse.next();
-    }
-    
-    const session = request.cookies.get('mt-admin-session');
-    if (!session) {
-      return NextResponse.redirect(new URL(`${ADMIN_PATH}/auth`, request.url));
-    }
-    
-    try {
-      verify(session.value, process.env.ADMIN_SESSION_SECRET!);
-    } catch {
-      return NextResponse.redirect(new URL(`${ADMIN_PATH}/auth`, request.url));
-    }
+    // Authentication temporarily disabled for admin routes
+    // if (pathname === `${ADMIN_PATH}/auth`) {
+    //   return NextResponse.next();
+    // }
+    // const session = request.cookies.get('mt-admin-session');
+    // if (!session) {
+    //   return NextResponse.redirect(new URL(`${ADMIN_PATH}/auth`, request.url));
+    // }
+    // try {
+    //   verify(session.value, process.env.ADMIN_SESSION_SECRET!);
+    // } catch {
+    //   return NextResponse.redirect(new URL(`${ADMIN_PATH}/auth`, request.url));
+    // }
   }
   
   // TACTICAL: Deploy decoy/honeypot

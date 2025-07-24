@@ -1,0 +1,9 @@
+export { TourCard } from './tour-card';
+export { Testimonial } from './testimonial';
+export { TestimonialCarousel } from './testimonial-carousel';
+export { FeaturedToursCarousel } from './featured-tours-carousel';
+export { TourGallery } from './tour-gallery';
+export { TourItinerary } from './tour-itinerary';
+export { HomeFeatures } from './home-features';
+export { JamaicaSlideshow } from './jamaica-slideshow';
+export { InvisibleBackgroundMusic } from './invisible-background-music'; 

@@ -1,11 +1,11 @@
-import { Navbar } from "@/components/navbar"
-import { Hero } from "@/components/hero"
-import { JamaicaSlideshow } from "@/components/jamaica-slideshow"
-import { TestimonialCarousel } from "@/components/testimonial-carousel"
-import { Footer } from "@/components/footer"
+import { Navbar } from '@/components/layout/navbar'
+import { Hero } from '@/components/layout/hero'
+import { JamaicaSlideshow } from '@/components/features/jamaica-slideshow'
+import { TestimonialCarousel } from '@/components/features/testimonial-carousel'
+import { Footer } from '@/components/layout/footer'
 import { Newsletter } from "@/components/newsletter"
-import { FeaturedToursCarousel } from "@/components/featured-tours-carousel"
-import { HomeFeatures } from "@/components/home-features"
+import { FeaturedToursCarousel } from '@/components/features/featured-tours-carousel'
+import { HomeFeatures } from '@/components/features/home-features'
 import { supabase } from "@/lib/supabase"
 
 export const revalidate = 60; // Revalidate data every 60 seconds
