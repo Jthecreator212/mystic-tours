@@ -83,7 +83,7 @@ export default async function TourPage({ params }: { params: Promise<{ slug: str
   return (
     <main className="min-h-screen">
       <Navbar />
-      <PageHeader title={tour.title} subtitle={tour.short_description || ''} imagePath={tour.image_url || '/placeholder.svg'} />
+      <PageHeader title={tour.title} subtitle={tour.short_description || ''} imagePaths={[tour.image_url || '/placeholder.svg']} />
 
       <section className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

@@ -92,6 +92,7 @@ interface NotificationData {
   specialRequests?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function _sendTelegramNotification(data: NotificationData) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;

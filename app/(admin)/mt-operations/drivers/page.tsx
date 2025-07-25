@@ -13,6 +13,14 @@ interface Driver {
   created_at: string;
 }
 
+interface DriverJob {
+  id: string;
+  type: string;
+  customer_name: string;
+  date: string;
+  status: string;
+}
+
 export default function DriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,7 +139,7 @@ export default function DriversPage() {
   );
 }
 
-function AddDriverForm({ onSuccess, onCancel }: { onSuccess: (driver: Record<string, unknown>) => void; onCancel: () => void }) {
+function AddDriverForm({ onSuccess, onCancel }: { onSuccess: (driver: Driver) => void; onCancel: () => void }) {
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -279,14 +287,17 @@ function EditDriverForm({ driver, onSuccess, onCancel }: { driver: Driver; onSuc
         {data && data.jobs && data.jobs.length === 0 && <div className="text-[#85603f]">No assignments found.</div>}
         {data && data.jobs && data.jobs.length > 0 && (
           <ul className="divide-y divide-[#f8ede3]">
-            {data.jobs.map((job: Record<string, unknown>) => (
-              <li key={job.id} className="py-2 flex items-center gap-3">
-                <span className="inline-block px-2 py-1 rounded text-xs font-bold" style={{ background: job.type === 'airport' ? '#e9b824' : '#388e3c', color: '#fff' }}>{job.type === 'airport' ? 'Airport' : 'Tour'}</span>
-                <span className="text-[#1a5d1a] font-semibold">{job.customer_name}</span>
-                <span className="text-[#85603f]">{job.date ? new Date(job.date).toLocaleDateString() : '-'}</span>
-                <span className={`ml-auto px-2 py-1 rounded text-xs font-bold ${job.status === 'assigned' ? 'bg-yellow-200 text-yellow-900' : job.status === 'completed' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>{job.status.charAt(0).toUpperCase() + job.status.slice(1)}</span>
-              </li>
-            ))}
+            {data.jobs.map((job: Record<string, unknown>) => {
+              const typedJob = job as unknown as DriverJob;
+              return (
+                <li key={typedJob.id} className="py-2 flex items-center gap-3">
+                  <span className="inline-block px-2 py-1 rounded text-xs font-bold" style={{ background: typedJob.type === 'airport' ? '#e9b824' : '#388e3c', color: '#fff' }}>{typedJob.type === 'airport' ? 'Airport' : 'Tour'}</span>
+                  <span className="text-[#1a5d1a] font-semibold">{typedJob.customer_name}</span>
+                  <span className="text-[#85603f]">{typedJob.date ? new Date(typedJob.date).toLocaleDateString() : '-'}</span>
+                  <span className={`ml-auto px-2 py-1 rounded text-xs font-bold ${typedJob.status === 'assigned' ? 'bg-yellow-200 text-yellow-900' : typedJob.status === 'completed' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>{typedJob.status.charAt(0).toUpperCase() + typedJob.status.slice(1)}</span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

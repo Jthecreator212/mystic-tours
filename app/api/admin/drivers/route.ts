@@ -11,7 +11,7 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     return NextResponse.json({ drivers: data || [] });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch drivers.' }, { status: 500 });
   }
 }
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     return NextResponse.json({ driver: data });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Failed to create driver.' }, { status: 500 });
   }
 } 

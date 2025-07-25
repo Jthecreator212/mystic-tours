@@ -196,7 +196,7 @@ async function migrateData() {
         })
       
       if (error) {
-        console.error(`Error migrating team member ${member.id}:`, error.message)
+        console.error(`Error migrating team member ${member.name}:`, error.message)
       } else {
         console.log(`Migrated team member: ${member.name}`)
       }

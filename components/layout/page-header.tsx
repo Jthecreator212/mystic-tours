@@ -14,7 +14,9 @@ export function PageHeader({
   title, 
   subtitle, 
   imagePaths, 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   slideshow = false,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   aspectRatio = "16/9"
 }: PageHeaderProps) {
 

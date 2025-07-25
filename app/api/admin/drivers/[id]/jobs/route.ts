@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
-export async function GET(req: Request, context: { params: { id: string } }) {
-  const { params } = await context;
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const driverId = params.id;
   try {
     // Get all assignments for this driver
@@ -46,7 +46,7 @@ export async function GET(req: Request, context: { params: { id: string } }) {
     // Sort by date descending
     jobs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     return NextResponse.json({ jobs });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch jobs.' }, { status: 500 });
   }
 } 

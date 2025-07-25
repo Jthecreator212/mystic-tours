@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
     return NextResponse.json({ assignment, booking: updatedBooking });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Failed to assign driver.' }, { status: 500 });
   }
 }
@@ -95,7 +95,7 @@ export async function GET() {
       };
     });
     return NextResponse.json({ assignments: assignmentsWithDetails });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch assignments.' }, { status: 500 });
   }
 } 

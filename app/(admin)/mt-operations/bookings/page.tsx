@@ -3,6 +3,12 @@ import { useEffect, useState } from "react";
 import { Trash2, Pencil, Calendar, Plane, UserCheck } from "lucide-react";
 import { tourData } from "@/data/tours";
 
+interface Driver {
+  id: string;
+  name: string;
+  status: string;
+}
+
 export interface TourBooking {
   id: string;
   tour_id: string | null;
@@ -800,8 +806,8 @@ function CreateBookingModal({ open, onClose, onSave }: { open: boolean; onClose:
 }
 
 // Add driver assignment modal
-function AssignDriverModal({ booking, open, onClose, onAssigned }: { booking: AdminBooking | null; open: boolean; onClose: () => void; onAssigned: (updated: AdminBooking, driver: Record<string, unknown>) => void }) {
-  const [drivers, setDrivers] = useState<Record<string, unknown>[]>([]);
+function AssignDriverModal({ booking, open, onClose, onAssigned }: { booking: AdminBooking | null; open: boolean; onClose: () => void; onAssigned: (updated: AdminBooking, driver: Driver) => void }) {
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [selectedDriver, setSelectedDriver] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [assigning, setAssigning] = useState(false);
@@ -917,11 +923,12 @@ function BookingsTable() {
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [editBooking, setEditBooking] = useState<AdminBooking | null>(null);
   const [creating, setCreating] = useState(false);
   const [assigningBooking, setAssigningBooking] = useState<AdminBooking | null>(null);
-  const [assignedDrivers, setAssignedDrivers] = useState<Record<string, unknown>>({});
+  const [assignedDrivers, setAssignedDrivers] = useState<Record<string, Driver>>({});
 
   // Search and filter state
   const [search, setSearch] = useState('');
@@ -1012,7 +1019,7 @@ function BookingsTable() {
           </select>
           <select
             value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value as 'all' | 'tour' | 'airport')}
+            onChange={e => setStatusFilter(e.target.value as 'all' | 'pending' | 'confirmed' | 'cancelled')}
             className="border rounded px-2 py-2 text-sm focus:outline-none focus:border-[#388e3c]"
           >
             <option value="all">All Statuses</option>
@@ -1092,7 +1099,7 @@ function BookingsTable() {
             {b.status === 'confirmed' && assignedDrivers[isAirportBooking(b) ? b.uuid : b.id] && (
               <div className="flex items-center gap-1 text-xs text-[#388e3c] mt-2">
                 <UserCheck className="w-4 h-4" />
-                Driver: {assignedDrivers[isAirportBooking(b) ? b.uuid : b.id].name}
+                Driver: {(assignedDrivers[isAirportBooking(b) ? b.uuid : b.id] as Driver).name}
               </div>
             )}
             {confirmId === (isAirportBooking(b) ? b.uuid : b.id) && (
@@ -1145,9 +1152,9 @@ function BookingsTable() {
         booking={assigningBooking}
         open={!!assigningBooking}
         onClose={() => setAssigningBooking(null)}
-        onAssigned={(updated, assignment) => {
+        onAssigned={(updated, driver) => {
           setBookings(prev => prev.map(b => (isAirportBooking(b) ? b.uuid : b.id) === (isAirportBooking(updated) ? updated.uuid : updated.id) ? { ...b, ...updated } : b));
-          setAssignedDrivers(prev => ({ ...prev, [(isAirportBooking(updated) ? updated.uuid : updated.id)]: assignment.driver || {} }));
+          setAssignedDrivers(prev => ({ ...prev, [(isAirportBooking(updated) ? updated.uuid : updated.id)]: driver }));
           setAssigningBooking(null);
           setToast({ type: 'success', message: 'Driver assigned and booking confirmed.' });
         }}

@@ -33,7 +33,7 @@ export async function GET() {
       totalImages,
       totalRevenue
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
   }
 } 

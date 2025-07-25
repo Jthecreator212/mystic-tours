@@ -81,7 +81,7 @@ export function InvisibleBackgroundMusic({
     const handleError = () => {
       const audioError = audio.error
       let errorMsg = 'Unknown audio error'
-      let shouldTryNext = true
+      const shouldTryNext = true
       
       if (audioError) {
         switch (audioError.code) {

@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { airportPickupSchema } from '@/lib/schemas/form-schemas';
 
-export async function PATCH(req: Request, context: { params: { id: string } }) {
-  const { params } = await context;
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     const uuid = params.id;
     const body = await req.json();
@@ -28,14 +28,14 @@ export async function PATCH(req: Request, context: { params: { id: string } }) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
     return NextResponse.json({ booking: data });
-  } catch (error) {
-    console.error('PATCH handler caught error:', error);
+  } catch {
+    console.error('PATCH handler caught error');
     return NextResponse.json({ error: 'Failed to update booking' }, { status: 500 });
   }
 }
 
-export async function DELETE(req: Request, context: { params: { id: string } }) {
-  const { params } = await context;
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     const uuid = params.id;
     const { data, error } = await supabaseAdmin
@@ -51,7 +51,7 @@ export async function DELETE(req: Request, context: { params: { id: string } }) 
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
     return NextResponse.json({ success: true, booking: data });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to delete booking' }, { status: 500 });
   }
 } 

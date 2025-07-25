@@ -97,7 +97,7 @@ export async function GET() {
     }
 
     return NextResponse.json({ bookings: data || [] });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Unexpected error.' }, { status: 500 });
   }
 }
@@ -112,6 +112,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 });
   }
   // Remove id and special_requests from booking insert
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id, special_requests, ...bookingData } = body;
   const { data, error } = await supabaseAdmin.from('bookings').insert([bookingData]).select().single();
   if (error) {

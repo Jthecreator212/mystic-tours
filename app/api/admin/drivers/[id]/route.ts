@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
-export async function PUT(req: Request, context: { params: { id: string } }) {
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   return handleUpdate(req, context);
 }
 
-export async function PATCH(req: Request, context: { params: { id: string } }) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   return handleUpdate(req, context);
 }
 
-async function handleUpdate(req: Request, context: { params: { id: string } }) {
-  const { params } = context;
+async function handleUpdate(req: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     const id = params.id;
     const body = await req.json();
@@ -33,14 +33,14 @@ async function handleUpdate(req: Request, context: { params: { id: string } }) {
     }
     
     return NextResponse.json({ driver: data });
-  } catch (err) {
-    console.error('Driver update exception:', err);
+  } catch {
+    console.error('Driver update exception');
     return NextResponse.json({ error: 'Failed to update driver.' }, { status: 500 });
   }
 }
 
-export async function DELETE(req: Request, context: { params: { id: string } }) {
-  const { params } = context;
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     const id = params.id;
     const { data, error } = await supabaseAdmin
@@ -53,7 +53,7 @@ export async function DELETE(req: Request, context: { params: { id: string } }) 
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     return NextResponse.json({ success: true, driver: data });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Failed to delete driver.' }, { status: 500 });
   }
 } 

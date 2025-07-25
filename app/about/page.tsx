@@ -29,6 +29,7 @@ async function getTeamMembers(): Promise<TeamMember[]> {
 }
 
 export default async function AboutPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _teamMembers = await getTeamMembers();
 
   return (

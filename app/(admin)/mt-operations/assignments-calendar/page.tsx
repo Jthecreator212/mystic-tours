@@ -46,8 +46,8 @@ export default function AssignmentsCalendarPage() {
 
   const events: Event[] = (data?.assignments || dummyEvents).map((a: Record<string, unknown>) => ({
     title: `Driver: ${a.driver_name} - ${a.booking_type === 'airport' ? 'Airport' : 'Tour'}: ${a.customer_name}`,
-    start: new Date(a.date),
-    end: new Date(a.date),
+    start: new Date(a.date as string),
+    end: new Date(a.date as string),
     allDay: true,
     resource: { driver: a.driver_name, bookingType: a.booking_type, status: a.assignment_status },
   }));
