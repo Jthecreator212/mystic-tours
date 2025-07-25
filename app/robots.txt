@@ -1,0 +1,34 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://mystictours.com/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /api/admin/
+Disallow: /_next/
+Disallow: /api/analytics/
+
+# Allow important pages
+Allow: /tours/
+Allow: /airport-pickup/
+Allow: /about/
+Allow: /contact/
+Allow: /gallery/
+
+# Specific rules for search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0.5
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 0.5
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1 
