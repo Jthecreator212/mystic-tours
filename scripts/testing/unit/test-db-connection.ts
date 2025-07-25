@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 // Import Supabase client
-import { supabaseAdmin } from '../lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase/supabase';
 
 async function testDatabaseConnection() {
   console.log('🔍 Testing Database Connection...\n');

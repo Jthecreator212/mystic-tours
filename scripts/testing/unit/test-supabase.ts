@@ -1,9 +1,9 @@
 // Load environment variables from .env.local
-import * as dotenv from 'dotenv'
+import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' })
 
-// Import Supabase client
-import { createClient } from '@supabase/supabase-js'
+// Fix any relative imports at the top
+import { supabaseAdmin } from '@/lib/supabase/supabase';
 
 // Create Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -14,12 +14,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1)
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-})
+const supabase = supabaseAdmin
 
 async function testSupabaseConnection() {
   console.log('Testing Supabase connection...')

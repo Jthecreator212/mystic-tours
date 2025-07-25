@@ -17,8 +17,16 @@ interface PerformanceMonitorProps {
   enabled?: boolean;
 }
 
+interface LayoutShift extends PerformanceEntry {
+  value: number;
+  hadRecentInput: boolean;
+}
+
+interface PerformanceEventTiming extends PerformanceEntry {
+  processingStart: number;
+}
+
 export function PerformanceMonitor({ onMetrics, enabled = true }: PerformanceMonitorProps) {
-  const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
   const observerRef = useRef<PerformanceObserver | null>(null);
   const navigationStartRef = useRef<number>(0);
 
@@ -49,7 +57,6 @@ export function PerformanceMonitor({ onMetrics, enabled = true }: PerformanceMon
         timeToInteractive: 0,
       };
 
-      setMetrics(metrics);
       onMetrics?.(metrics);
 
       // Log to console in development
@@ -79,7 +86,8 @@ export function PerformanceMonitor({ onMetrics, enabled = true }: PerformanceMon
           
           if (lastEntry && lastEntry.entryType === 'largest-contentful-paint') {
             const lcp = lastEntry.startTime - navigationStartRef.current;
-            setMetrics(prev => prev ? { ...prev, largestContentfulPaint: lcp } : null);
+            // Handle LCP metric update
+            console.log('LCP:', lcp);
           }
         });
 
@@ -95,11 +103,11 @@ export function PerformanceMonitor({ onMetrics, enabled = true }: PerformanceMon
         const clsObserver = new PerformanceObserver((list) => {
           let clsValue = 0;
           for (const entry of list.getEntries()) {
-            if (entry.entryType === 'layout-shift' && !(entry as any).hadRecentInput) {
-              clsValue += (entry as any).value;
+            if (entry.entryType === 'layout-shift' && !(entry as LayoutShift).hadRecentInput) {
+              clsValue += (entry as LayoutShift).value;
             }
           }
-          setMetrics(prev => prev ? { ...prev, cumulativeLayoutShift: clsValue } : null);
+          console.log('CLS:', clsValue);
         });
 
         clsObserver.observe({ entryTypes: ['layout-shift'] });
@@ -114,12 +122,12 @@ export function PerformanceMonitor({ onMetrics, enabled = true }: PerformanceMon
         try {
           const fidObserver = new PerformanceObserver((list) => {
             const entries = list.getEntries();
-            const firstInput = entries[0];
+            const firstInput = entries[0] as PerformanceEventTiming;
             
-                         if (firstInput) {
-               const fid = (firstInput as any).processingStart - firstInput.startTime;
-               setMetrics(prev => prev ? { ...prev, firstInputDelay: fid } : null);
-             }
+            if (firstInput) {
+              const fid = firstInput.processingStart - firstInput.startTime;
+              console.log('FID:', fid);
+            }
           });
 
           fidObserver.observe({ entryTypes: ['first-input'] });
@@ -139,7 +147,7 @@ export function PerformanceMonitor({ onMetrics, enabled = true }: PerformanceMon
             
             if (ttiEntry) {
               const tti = ttiEntry.startTime - navigationStartRef.current;
-              setMetrics(prev => prev ? { ...prev, timeToInteractive: tti } : null);
+              console.log('TTI:', tti);
             }
           });
 
@@ -163,8 +171,8 @@ export function PerformanceMonitor({ onMetrics, enabled = true }: PerformanceMon
 
   const sendToAnalytics = (metrics: PerformanceMetrics) => {
     // Send to your analytics service (Google Analytics, Mixpanel, etc.)
-    if (typeof (window as any).gtag !== 'undefined') {
-      (window as any).gtag('event', 'performance_metrics', {
+    if (typeof (window as { gtag?: (...args: unknown[]) => void }).gtag !== 'undefined') {
+      ((window as unknown) as { gtag: (...args: unknown[]) => void }).gtag('event', 'performance_metrics', {
         page_load_time: metrics.pageLoadTime,
         dom_content_loaded: metrics.domContentLoaded,
         first_contentful_paint: metrics.firstContentfulPaint,

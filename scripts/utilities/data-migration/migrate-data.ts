@@ -3,10 +3,10 @@ import * as dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 
 // Import data and create Supabase client directly
+import { galleryData } from '@/data/gallery'
+import { teamData } from '@/data/team'
+import { tourData } from '@/data/tours'
 import { createClient } from '@supabase/supabase-js'
-import { tourData } from '../data/tours'
-import { galleryData } from '../data/gallery'
-import { teamData } from '../data/team'
 
 // Create Supabase admin client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL

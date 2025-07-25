@@ -5,11 +5,11 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 // Import all action functions
-import { createTourBooking } from '../app/actions/booking-actions';
-import { createAirportPickupBooking } from '../app/actions/airport-pickup-actions';
-import { submitContactForm } from '../app/actions/contact-actions';
-import { subscribeToNewsletter } from '../app/actions/newsletter-actions';
-import { supabaseAdmin } from '../lib/supabase';
+import { createAirportPickupBooking } from '@/app/actions/airport-pickup-actions';
+import { createTourBooking } from '@/app/actions/booking-actions';
+import { submitContactForm } from '@/app/actions/contact-actions';
+import { subscribeToNewsletter } from '@/app/actions/newsletter-actions';
+import { supabaseAdmin } from '@/lib/supabase/supabase';
 
 // Test data generators
 function generateTourBookingData() {

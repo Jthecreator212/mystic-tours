@@ -1,4 +1,4 @@
-import { createTourBooking } from '../app/actions/booking-actions';
+import { createTourBooking } from '@/app/actions/booking-actions';
 
 async function testBooking() {
   console.log('🧪 Testing booking system...\n');

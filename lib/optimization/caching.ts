@@ -1,5 +1,5 @@
 // Caching utilities for better performance
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 // Cache interface
 interface CacheItem<T> {
@@ -10,7 +10,7 @@ interface CacheItem<T> {
 
 // In-memory cache
 class MemoryCache {
-  private cache = new Map<string, CacheItem<any>>();
+  private cache = new Map<string, CacheItem<unknown>>();
 
   set<T>(key: string, data: T, ttl: number = 5 * 60 * 1000): void {
     this.cache.set(key, {
@@ -33,7 +33,7 @@ class MemoryCache {
       return null;
     }
 
-    return item.data;
+    return item.data as T;
   }
 
   has(key: string): boolean {
@@ -132,7 +132,7 @@ export function useCachedData<T>(
   key: string,
   fetchFn: () => Promise<T>,
   ttl: number = CACHE_TTL.MEDIUM,
-  dependencies: any[] = []
+  dependencies: unknown[] = []
 ) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -150,11 +150,12 @@ export function useCachedData<T>(
     } finally {
       setLoading(false);
     }
-  }, [key, ttl, ...dependencies]);
+  }, [key, fetchFn, ttl]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchData, ...dependencies]);
 
   const refetch = useCallback(() => {
     cacheUtils.delete(key);

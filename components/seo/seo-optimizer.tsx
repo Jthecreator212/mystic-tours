@@ -20,7 +20,7 @@ interface SEOData {
 
 interface SEOOptimizerProps {
   data: SEOData;
-  structuredData?: Record<string, any>;
+  structuredData?: Record<string, unknown>;
   canonicalUrl?: string;
   noIndex?: boolean;
   noFollow?: boolean;
@@ -62,20 +62,6 @@ export function SEOOptimizer({
     };
   };
 
-  // Generate breadcrumb structured data
-  const generateBreadcrumbStructuredData = (breadcrumbs: Array<{ name: string; url: string }>) => {
-    return {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: breadcrumbs.map((crumb, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        name: crumb.name,
-        item: crumb.url,
-      })),
-    };
-  };
-
   // Generate organization structured data
   const generateOrganizationStructuredData = () => {
     return {
@@ -101,54 +87,6 @@ export function SEOOptimizer({
         'https://instagram.com/mystictours',
         'https://twitter.com/mystictours',
       ],
-    };
-  };
-
-  // Generate FAQ structured data
-  const generateFAQStructuredData = (faqs: Array<{ question: string; answer: string }>) => {
-    return {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: faqs.map(faq => ({
-        '@type': 'Question',
-        name: faq.question,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: faq.answer,
-        },
-      })),
-    };
-  };
-
-  // Generate review structured data
-  const generateReviewStructuredData = (reviews: Array<{
-    author: string;
-    rating: number;
-    reviewBody: string;
-    datePublished: string;
-  }>) => {
-    return {
-      '@context': 'https://schema.org',
-      '@type': 'TouristAttraction',
-      name: title,
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length,
-        reviewCount: reviews.length,
-      },
-      review: reviews.map(review => ({
-        '@type': 'Review',
-        author: {
-          '@type': 'Person',
-          name: review.author,
-        },
-        reviewRating: {
-          '@type': 'Rating',
-          ratingValue: review.rating,
-        },
-        reviewBody: review.reviewBody,
-        datePublished: review.datePublished,
-      })),
     };
   };
 

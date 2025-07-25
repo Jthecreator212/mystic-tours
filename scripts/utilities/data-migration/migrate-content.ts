@@ -1,11 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
+import 'dotenv/config';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import 'dotenv/config';
 
 // --- Static Data Imports ---
-import { tourData } from '../data/tours';
-import { teamData } from '../data/team';
+import { teamData } from '@/data/team';
+import { tourData } from '@/data/tours';
 
 // --- Configuration ---
 const BUCKET_NAME = 'site-images';

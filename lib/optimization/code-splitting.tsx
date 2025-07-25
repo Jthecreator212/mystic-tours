@@ -2,6 +2,7 @@
 import React, { ComponentType, lazy, Suspense } from 'react';
 
 // Lazy loading wrapper with error boundary
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createLazyComponent<T extends ComponentType<any>>(
   importFunc: () => Promise<{ default: T }>,
   fallback?: React.ComponentType
@@ -9,8 +10,9 @@ export function createLazyComponent<T extends ComponentType<any>>(
   const LazyComponent = lazy(importFunc);
   
   return function LazyWrapper(props: React.ComponentProps<T>) {
+    const FallbackComponent = fallback || DefaultFallback;
     return (
-      <Suspense fallback={fallback ? React.createElement(fallback) : <DefaultFallback />}>
+      <Suspense fallback={<FallbackComponent />}>
         <LazyComponent {...props} />
       </Suspense>
     );
@@ -41,39 +43,29 @@ export const LazyRoutes = {
   
   // Public routes
   ToursPage: createLazyComponent(() => import('@/app/tours/page')),
-  TourDetail: createLazyComponent(() => import('@/app/tours/[slug]/page')),
   AboutPage: createLazyComponent(() => import('@/app/about/page')),
   ContactPage: createLazyComponent(() => import('@/app/contact/page')),
   GalleryPage: createLazyComponent(() => import('@/app/gallery/page')),
   AirportPickup: createLazyComponent(() => import('@/app/airport-pickup/page')),
   
-  // Components
-  TourBookingForm: createLazyComponent(() => import('@/components/forms/tour-booking-form')),
-  AirportPickupForm: createLazyComponent(() => import('@/components/forms/airport-pickup-form')),
-  ContactForm: createLazyComponent(() => import('@/components/forms/contact-form')),
-  TourCard: createLazyComponent(() => import('@/components/features/tour-card')),
-  TestimonialCarousel: createLazyComponent(() => import('@/components/features/testimonial-carousel')),
-  FeaturedToursCarousel: createLazyComponent(() => import('@/components/features/featured-tours-carousel')),
+  // Components with named exports
+  TourBookingForm: createLazyComponent(() => import('@/components/forms/tour-booking-form').then(mod => ({ default: mod.TourBookingForm }))),
+  AirportPickupForm: createLazyComponent(() => import('@/components/forms/airport-pickup-form').then(mod => ({ default: mod.AirportPickupForm }))),
+  ContactForm: createLazyComponent(() => import('@/components/forms/contact-form').then(mod => ({ default: mod.ContactForm }))),
+  TourCard: createLazyComponent(() => import('@/components/features/tour-card').then(mod => ({ default: mod.TourCard }))),
+  TestimonialCarousel: createLazyComponent(() => import('@/components/features/testimonial-carousel').then(mod => ({ default: mod.TestimonialCarousel }))),
+  FeaturedToursCarousel: createLazyComponent(() => import('@/components/features/featured-tours-carousel').then(mod => ({ default: mod.FeaturedToursCarousel }))),
 };
 
 // Dynamic imports for heavy components
 export const DynamicComponents = {
-  // Charts and data visualization
-  Chart: createLazyComponent(() => import('@/components/ui/chart')),
-  
-  // Complex forms
-  AdvancedForm: createLazyComponent(() => import('@/components/forms/advanced-form')),
-  
-  // Admin components
-  AdminTable: createLazyComponent(() => import('@/components/admin/admin-table')),
-  AdminChart: createLazyComponent(() => import('@/components/admin/admin-chart')),
-  
-  // Feature components
-  InteractiveMap: createLazyComponent(() => import('@/components/features/interactive-map')),
-  VirtualTour: createLazyComponent(() => import('@/components/features/virtual-tour')),
+  // Keep this simple - only include components that definitely exist
+  TourGallery: createLazyComponent(() => import('@/components/features/tour-gallery').then(mod => ({ default: mod.TourGallery }))),
+  TourItinerary: createLazyComponent(() => import('@/components/features/tour-itinerary').then(mod => ({ default: mod.TourItinerary }))),
 };
 
 // Preload components for better UX
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function preloadComponent<T extends ComponentType<any>>(
   importFunc: () => Promise<{ default: T }>
 ): () => void {
@@ -92,9 +84,9 @@ export function preloadComponent<T extends ComponentType<any>>(
 export const preloadCriticalComponents = () => {
   // Preload components that are likely to be needed
   const preloaders = [
-    preloadComponent(() => import('@/components/forms/tour-booking-form')),
-    preloadComponent(() => import('@/components/features/tour-card')),
-    preloadComponent(() => import('@/components/layout/navbar')),
+    preloadComponent(() => import('@/components/forms/tour-booking-form').then(mod => ({ default: mod.TourBookingForm }))),
+    preloadComponent(() => import('@/components/features/tour-card').then(mod => ({ default: mod.TourCard }))),
+    preloadComponent(() => import('@/components/layout/navbar').then(mod => ({ default: mod.Navbar }))),
   ];
   
   // Execute preloaders
@@ -115,6 +107,7 @@ export function analyzeBundle() {
 }
 
 // Performance monitoring for lazy components
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function withPerformanceMonitoring<T extends ComponentType<any>>(
   Component: T,
   componentName: string
@@ -127,15 +120,15 @@ export function withPerformanceMonitoring<T extends ComponentType<any>>(
       console.log(`${componentName} loaded in ${loadTime.toFixed(2)}ms`);
       
       // Send to analytics
-      if (typeof (window as any).gtag !== 'undefined') {
-        (window as any).gtag('event', 'component_load', {
+      if (typeof (window as { gtag?: (...args: unknown[]) => void }).gtag !== 'undefined') {
+        ((window as unknown) as { gtag: (...args: unknown[]) => void }).gtag('event', 'component_load', {
           component_name: componentName,
           load_time: loadTime,
         });
       }
-    }, []);
+    }, [startTime]);
     
-    return <Component {...props} />;
+    return React.createElement(Component, props);
   };
   
   WrappedComponent.displayName = `withPerformanceMonitoring(${componentName})`;
@@ -170,7 +163,7 @@ export function useConditionalLoading<T>(
 
 // Route-based preloading
 export function preloadRoute(route: string) {
-  const routeMap: { [key: string]: () => Promise<any> } = {
+  const routeMap: { [key: string]: () => Promise<unknown> } = {
     '/tours': () => import('@/app/tours/page'),
     '/about': () => import('@/app/about/page'),
     '/contact': () => import('@/app/contact/page'),

@@ -1,17 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const startTime = Date.now();
   
   try {
     // Check database connectivity
-    const { data: dbHealth, error: dbError } = await supabase
+    const { error: dbError } = await supabase
       .from('tours')
       .select('count')
       .limit(1);

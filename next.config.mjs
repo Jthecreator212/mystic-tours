@@ -97,28 +97,6 @@ const nextConfig = {
     ];
   },
 
-  // Bundle analyzer (only in development)
-  ...(process.env.ANALYZE === 'true' && {
-    webpack: (config, { isServer }) => {
-      if (!isServer) {
-        const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
-        config.plugins.push(
-          new BundleAnalyzerPlugin({
-            analyzerMode: 'static',
-            openAnalyzer: false,
-            reportFilename: '.next/bundle-analyzer/client.html',
-          })
-        );
-      }
-      return config;
-    },
-  }),
-
-  // Environment variables
-  env: {
-    CUSTOM_KEY: process.env.CUSTOM_KEY,
-  },
-
   // TypeScript and ESLint
   typescript: {
     ignoreBuildErrors: false,
@@ -127,8 +105,30 @@ const nextConfig = {
     ignoreDuringBuilds: false,
   },
 
-  // Output configuration
-  output: 'standalone',
+  // Windows-specific optimizations
+  webpack: (config, { dev, isServer }) => {
+    // Handle Windows symlink issues
+    if (process.platform === 'win32') {
+      config.resolve.symlinks = false;
+    }
+    
+    // Bundle analyzer (only in development)
+    if (process.env.ANALYZE === 'true' && !isServer) {
+      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+      config.plugins.push(
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'static',
+          openAnalyzer: false,
+          reportFilename: '.next/bundle-analyzer/client.html',
+        })
+      );
+    }
+    
+    return config;
+  },
+
+  // Disable standalone output to avoid Windows symlink issues
+  // output: 'standalone', // Commented out to fix Windows EPERM errors
 
   // Trailing slash
   trailingSlash: false,

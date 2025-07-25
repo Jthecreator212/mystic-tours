@@ -66,6 +66,34 @@ export function RealTimeNotifications({
     loadNotifications();
   }, [userId, supabase]);
 
+  const playNotificationSound = useCallback((type: string) => {
+    try {
+      const audio = new Audio();
+      
+      switch (type) {
+        case 'error':
+          audio.src = '/sounds/error.mp3';
+          break;
+        case 'warning':
+          audio.src = '/sounds/warning.mp3';
+          break;
+        case 'success':
+          audio.src = '/sounds/success.mp3';
+          break;
+        default:
+          audio.src = '/sounds/notification.mp3';
+      }
+      
+      audio.volume = 0.3;
+      audio.play().catch(() => {
+        // Fallback to default notification sound
+        console.log('Could not play custom notification sound');
+      });
+    } catch (error) {
+      console.error('Error playing notification sound:', error);
+    }
+  }, []);
+
   // Set up real-time subscription
   useEffect(() => {
     if (!userId) return;
@@ -117,7 +145,7 @@ export function RealTimeNotifications({
         setNotifications(prev => 
           prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
         );
-        setUnreadCount(prev => 
+        setUnreadCount(() => 
           notifications.filter(n => !n.read).length
         );
       })
@@ -128,35 +156,7 @@ export function RealTimeNotifications({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, supabase, enableSound, autoHide, hideDuration]);
-
-  const playNotificationSound = useCallback((type: string) => {
-    try {
-      const audio = new Audio();
-      
-      switch (type) {
-        case 'error':
-          audio.src = '/sounds/error.mp3';
-          break;
-        case 'warning':
-          audio.src = '/sounds/warning.mp3';
-          break;
-        case 'success':
-          audio.src = '/sounds/success.mp3';
-          break;
-        default:
-          audio.src = '/sounds/notification.mp3';
-      }
-      
-      audio.volume = 0.3;
-      audio.play().catch(() => {
-        // Fallback to default notification sound
-        console.log('Could not play custom notification sound');
-      });
-    } catch (error) {
-      console.error('Error playing notification sound:', error);
-    }
-  }, []);
+  }, [userId, supabase, enableSound, autoHide, hideDuration, notifications, playNotificationSound]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
     if (!userId) return;

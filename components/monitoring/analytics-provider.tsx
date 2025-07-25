@@ -1,8 +1,7 @@
 // Analytics provider for comprehensive tracking
 'use client';
 
-import { useRouter } from 'next/navigation';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 interface AnalyticsEvent {
   event: string;
@@ -10,7 +9,7 @@ interface AnalyticsEvent {
   action: string;
   label?: string;
   value?: number;
-  custom_parameters?: Record<string, any>;
+  custom_parameters?: Record<string, unknown>;
 }
 
 interface AnalyticsContextType {
@@ -34,7 +33,6 @@ export function AnalyticsProvider({
   googleAnalyticsId,
   enableDebug = process.env.NODE_ENV === 'development'
 }: AnalyticsProviderProps) {
-  const router = useRouter();
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize Google Analytics
@@ -48,11 +46,11 @@ export function AnalyticsProvider({
 
       script.onload = () => {
         // Initialize gtag
-        (window as any).dataLayer = (window as any).dataLayer || [];
-        function gtag(...args: any[]) {
-          (window as any).dataLayer.push(args);
+        (window as { dataLayer?: unknown[] }).dataLayer = (window as { dataLayer?: unknown[] }).dataLayer || [];
+        function gtag(...args: unknown[]) {
+          (window as { dataLayer?: unknown[] }).dataLayer!.push(args);
         }
-        (window as any).gtag = gtag;
+        (window as { gtag?: typeof gtag }).gtag = gtag;
 
         gtag('js', new Date());
         gtag('config', googleAnalyticsId, {
@@ -70,6 +68,40 @@ export function AnalyticsProvider({
       setIsInitialized(true);
     }
   }, [googleAnalyticsId, enableDebug]);
+
+  // Track page views function
+  const trackPageView = useCallback((path: string, title?: string) => {
+    if (!isInitialized) return;
+
+    const gtag = (window as { gtag?: (...args: unknown[]) => void }).gtag;
+    if (gtag) {
+      gtag('config', googleAnalyticsId, {
+        page_path: path,
+        page_title: title,
+      });
+    }
+
+    // Send to custom analytics endpoint
+    fetch('/api/analytics/pageview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        path,
+        title,
+        timestamp: new Date().toISOString(),
+        user_agent: navigator.userAgent,
+        referrer: document.referrer,
+      }),
+    }).catch(error => {
+      if (enableDebug) {
+        console.error('Failed to send pageview:', error);
+      }
+    });
+
+    if (enableDebug) {
+      console.log('Page View:', { path, title });
+    }
+  }, [isInitialized, googleAnalyticsId, enableDebug]);
 
   // Track page views
   useEffect(() => {
@@ -92,12 +124,12 @@ export function AnalyticsProvider({
         handleRouteChange(window.location.pathname);
       });
     };
-  }, [isInitialized]);
+  }, [isInitialized, trackPageView]);
 
   const trackEvent = (event: AnalyticsEvent) => {
     if (!isInitialized) return;
 
-    const gtag = (window as any).gtag;
+    const gtag = (window as { gtag?: (...args: unknown[]) => void }).gtag;
     if (gtag) {
       gtag('event', event.event, {
         event_category: event.category,
@@ -125,39 +157,6 @@ export function AnalyticsProvider({
 
     if (enableDebug) {
       console.log('Analytics Event:', event);
-    }
-  };
-
-  const trackPageView = (path: string, title?: string) => {
-    if (!isInitialized) return;
-
-    const gtag = (window as any).gtag;
-    if (gtag) {
-      gtag('config', googleAnalyticsId, {
-        page_path: path,
-        page_title: title,
-      });
-    }
-
-    // Send to custom analytics endpoint
-    fetch('/api/analytics/pageview', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        path,
-        title,
-        timestamp: new Date().toISOString(),
-        user_agent: navigator.userAgent,
-        referrer: document.referrer,
-      }),
-    }).catch(error => {
-      if (enableDebug) {
-        console.error('Failed to send pageview:', error);
-      }
-    });
-
-    if (enableDebug) {
-      console.log('Page View:', { path, title });
     }
   };
 
@@ -222,63 +221,67 @@ export function useAnalytics() {
   return context;
 }
 
-// Predefined tracking functions
-export const trackBooking = (tourId: string, tourName: string, value: number) => {
-  const { trackConversion, trackEvent } = useAnalytics();
-  trackConversion('booking_completed', value);
-  
-  trackEvent({
-    event: 'booking',
-    category: 'conversion',
-    action: 'book_tour',
-    label: tourName,
-    value,
-    custom_parameters: {
-      tour_id: tourId,
-      tour_name: tourName,
-    },
-  });
-};
+// Create tracking functions that accept analytics context
+export const createTrackingFunctions = (analytics: AnalyticsContextType) => ({
+  trackBooking: (tourId: string, tourName: string, value: number) => {
+    analytics.trackConversion('booking_completed', value);
+    
+    analytics.trackEvent({
+      event: 'booking',
+      category: 'conversion',
+      action: 'book_tour',
+      label: tourName,
+      value,
+      custom_parameters: {
+        tour_id: tourId,
+        tour_name: tourName,
+      },
+    });
+  },
 
-export const trackTourView = (tourId: string, tourName: string) => {
-  const { trackEvent } = useAnalytics();
-  trackEvent({
-    event: 'view_item',
-    category: 'engagement',
-    action: 'view_tour',
-    label: tourName,
-    custom_parameters: {
-      tour_id: tourId,
-      tour_name: tourName,
-    },
-  });
-};
+  trackTourView: (tourId: string, tourName: string) => {
+    analytics.trackEvent({
+      event: 'view_item',
+      category: 'engagement',
+      action: 'view_tour',
+      label: tourName,
+      custom_parameters: {
+        tour_id: tourId,
+        tour_name: tourName,
+      },
+    });
+  },
 
-export const trackFormSubmission = (formType: string, success: boolean) => {
-  const { trackEvent } = useAnalytics();
-  trackEvent({
-    event: 'form_submit',
-    category: 'engagement',
-    action: formType,
-    label: success ? 'success' : 'error',
-    custom_parameters: {
-      form_type: formType,
-      success,
-    },
-  });
-};
+  trackFormSubmission: (formType: string, success: boolean) => {
+    analytics.trackEvent({
+      event: 'form_submit',
+      category: 'engagement',
+      action: formType,
+      label: success ? 'success' : 'error',
+      custom_parameters: {
+        form_type: formType,
+        success,
+      },
+    });
+  },
 
-export const trackSearch = (query: string, results: number) => {
-  const { trackEvent } = useAnalytics();
-  trackEvent({
-    event: 'search',
-    category: 'engagement',
-    action: 'search_tours',
-    label: query,
-    value: results,
-    custom_parameters: {
-      search_query: query,
-      results_count: results,
-    },
-  });
-}; 
+  trackSearch: (query: string, results: number) => {
+    analytics.trackEvent({
+      event: 'search',
+      category: 'engagement',
+      action: 'search_tours',
+      label: query,
+      value: results,
+      custom_parameters: {
+        search_query: query,
+        results_count: results,
+      },
+    });
+  },
+});
+
+// Hook to access tracking functions
+export function useTracking() {
+  const analytics = useAnalytics();
+  return createTrackingFunctions(analytics);
+} 

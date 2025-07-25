@@ -1,6 +1,6 @@
 // Image optimization utilities
-import React from 'react';
 import { ImageData } from '@/types/utils/common';
+import React from 'react';
 
 export interface ImageOptimizationOptions {
   quality?: number;
@@ -158,14 +158,6 @@ export function generatePlaceholderUrl(
   backgroundColor: string = '#f3f4f6',
   textColor: string = '#6b7280'
 ): string {
-  const params = new URLSearchParams({
-    width: width.toString(),
-    height: height.toString(),
-    text: encodeURIComponent(text),
-    bg: backgroundColor.replace('#', ''),
-    color: textColor.replace('#', ''),
-  });
-  
   return `https://via.placeholder.com/${width}x${height}/${backgroundColor.replace('#', '')}/${textColor.replace('#', '')}?text=${encodeURIComponent(text)}`;
 }
 

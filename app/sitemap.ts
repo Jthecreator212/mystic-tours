@@ -54,7 +54,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const { data: tours, error } = await supabase
       .from('tours')
       .select('slug, updated_at')
-      .eq('active', true)
       .order('created_at', { ascending: false });
 
     if (error) {

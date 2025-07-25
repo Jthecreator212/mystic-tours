@@ -15,7 +15,7 @@ import {
     TrendingUp,
     Users
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface HealthStatus {
   status: 'healthy' | 'unhealthy' | 'error';
@@ -33,7 +33,7 @@ interface HealthStatus {
       status: string;
       variables: Record<string, boolean>;
     };
-    external: Record<string, any>;
+    external: Record<string, unknown>;
   };
   checks: Record<string, boolean>;
 }
@@ -96,7 +96,7 @@ export function MonitoringDashboard() {
   };
 
   // Refresh all data
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     setIsLoading(true);
     await Promise.all([
       fetchHealthStatus(),
@@ -105,7 +105,7 @@ export function MonitoringDashboard() {
     ]);
     setLastUpdated(new Date());
     setIsLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     refreshData();
@@ -113,20 +113,7 @@ export function MonitoringDashboard() {
     // Auto-refresh every 30 seconds
     const interval = setInterval(refreshData, 30000);
     return () => clearInterval(interval);
-  }, []);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'healthy':
-        return 'bg-green-500';
-      case 'unhealthy':
-        return 'bg-yellow-500';
-      case 'error':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
+  }, [refreshData]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -149,12 +136,6 @@ export function MonitoringDashboard() {
     if (days > 0) return `${days}d ${hours}h ${minutes}m`;
     if (hours > 0) return `${hours}h ${minutes}m`;
     return `${minutes}m`;
-  };
-
-  const formatDuration = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
   if (isLoading && !healthStatus) {
