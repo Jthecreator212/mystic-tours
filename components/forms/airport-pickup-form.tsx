@@ -1,28 +1,28 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { createAirportPickupBooking } from "@/app/actions/airport-pickup-actions"
+import { AirportPickupConfirmationDialog } from "@/components/dialogs/airport-pickup-confirmation-dialog"
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { CalendarIcon, PlaneLanding, PlaneTakeoff } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { createAirportPickupBooking } from "@/app/actions/airport-pickup-actions"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { airportPickupSchema } from '@/lib/schemas/form-schemas'
-import { AirportPickupConfirmationDialog } from "@/components/dialogs/airport-pickup-confirmation-dialog"
+import { cn } from "@/lib/utils"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { format } from "date-fns"
+import { CalendarIcon, PlaneLanding, PlaneTakeoff } from "lucide-react"
+import { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 
 // Define proper types
 type AirportPickupFormData = z.infer<typeof airportPickupSchema>
@@ -36,6 +36,7 @@ interface BookingResult {
 export function AirportPickupForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState("")
+  const [isRateLimited, setIsRateLimited] = useState(false)
   const [isError, setIsError] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [bookingResult, setBookingResult] = useState<BookingResult | null>(null)
@@ -111,6 +112,7 @@ export function AirportPickupForm() {
     setIsSubmitting(true)
     setSubmitMessage("")
     setIsError(false)
+    setIsRateLimited(false)
 
     try {
       console.log("📞 Calling createAirportPickupBooking...");
@@ -139,7 +141,12 @@ export function AirportPickupForm() {
         form.setValue("passengers", 1);
       } else {
         console.log("❌ Error:", result.message);
-        setSubmitMessage(result.message || "An unexpected error occurred.");
+        if ((result as { rateLimited?: boolean }).rateLimited) {
+          setIsRateLimited(true)
+          setSubmitMessage(result.message || "Too many booking attempts. Please try again later.");
+        } else {
+          setSubmitMessage(result.message || "An unexpected error occurred.");
+        }
         setIsError(true);
       }
     } catch (error) {
@@ -401,13 +408,46 @@ export function AirportPickupForm() {
             )}
           </div>
           
-          <Button type="submit" className="w-full text-lg vintage-button" disabled={isSubmitting}>
-            {isSubmitting ? "Booking..." : `Book Now ($${getPrice().toFixed(2)})`}
+          <Button type="submit" className="w-full text-lg vintage-button" disabled={isSubmitting || isRateLimited}>
+            {isSubmitting ? "Booking..." : isRateLimited ? "Please Wait Before Trying Again" : `Book Now ($${getPrice().toFixed(2)})`}
           </Button>
 
           {submitMessage && (
-             <div className={`text-center p-4 mt-4 rounded-md ${isError ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                {submitMessage}
+            <div className={`p-4 mt-4 rounded-md border-l-4 ${
+              isRateLimited 
+                ? 'bg-orange-50 border-orange-500 text-orange-700'
+                : isError 
+                ? 'bg-red-50 border-red-500 text-red-700' 
+                : 'bg-green-50 border-green-500 text-green-700'
+            }`}>
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  {isRateLimited ? (
+                    <svg className="h-5 w-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  ) : isError ? (
+                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium">
+                    {isRateLimited ? 'Booking Rate Limit Reached' : isError ? 'Booking Error' : 'Success'}
+                  </p>
+                  <p className="text-sm mt-1">{submitMessage}</p>
+                  {isRateLimited && (
+                    <p className="text-sm mt-2 text-orange-600">
+                      💡 <strong>Tip:</strong> You can try again in a few minutes, or contact us directly for immediate assistance.
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </form>

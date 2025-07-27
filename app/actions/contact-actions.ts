@@ -1,6 +1,7 @@
 "use server"
 
-import { z } from "zod"
+import { formatContactMessage, sendTelegramMessage } from "@/lib/notifications/telegram";
+import { z } from "zod";
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -32,10 +33,15 @@ export async function submitContactForm(formData: z.infer<typeof contactFormSche
 
     // Send Telegram notification
     console.log("💬 3. Sending Telegram Notification...");
-    const notificationResult = await sendContactNotification(parsedData.data);
-
-    if (!notificationResult.success) {
-      console.error("Telegram notification failed:", notificationResult.message);
+    try {
+      const message = formatContactMessage(parsedData.data);
+      const notificationResult = await sendTelegramMessage(message);
+      
+      if (!notificationResult.success) {
+        console.error("Telegram notification failed:", notificationResult.message);
+      }
+    } catch (telegramError) {
+      console.error("Telegram notification failed:", telegramError);
     }
 
     return {
@@ -50,88 +56,3 @@ export async function submitContactForm(formData: z.infer<typeof contactFormSche
     }
   }
 }
-
-interface ContactNotificationData {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-}
-
-async function sendContactNotification(data: ContactNotificationData) {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-
-  if (!botToken || !chatId) {
-    console.error("Telegram bot token or chat ID is not configured in .env.local");
-    return {
-      success: false,
-      message: "Telegram credentials not configured."
-    };
-  }
-
-  const message = formatContactTelegramMessage(data);
-  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: 'Markdown',
-      }),
-    });
-
-    const result = await response.json() as Record<string, unknown>;
-
-    if (!result.ok) {
-      throw new Error(`Telegram API error: ${result.description}`);
-    }
-
-    return {
-      success: true,
-      message: "Telegram notification sent successfully",
-    }
-  } catch (error) {
-    console.error("Telegram notification error:", error);
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Unknown error",
-    }
-  }
-}
-
-function formatContactTelegramMessage(data: ContactNotificationData): string {
-  const subjectEmoji = {
-    "Tour Inquiry": "🎫",
-    "Booking Question": "❓", 
-    "Custom Tour Request": "✨",
-    "General Question": "💬"
-  };
-
-  const emoji = subjectEmoji[data.subject as keyof typeof subjectEmoji] || "📧";
-
-  let message = `${emoji} *Contact Form Submission* 📝\n\n`;
-  message += `A new message has been received through the contact form.\n\n`;
-
-  message += `*📋 Message Details*\n`;
-  message += `------------------------------------\n`;
-  message += `${emoji} *Subject:* ${data.subject}\n`;
-  message += `👤 *Name:* ${data.name}\n`;
-  message += `✉️ *Email:* ${data.email}\n`;
-  message += `------------------------------------\n\n`;
-
-  message += `*💬 Message:*\n`;
-  message += `\`\`\`\n${data.message}\n\`\`\`\n\n`;
-
-  message += `*🚨 ACTION REQUIRED 🚨*\n`;
-  message += `Please respond to the customer at *${data.email}*.\n\n`;
-
-  message += `🤖 _Mystic Contact Bot_`;
-
-  return message;
-} 

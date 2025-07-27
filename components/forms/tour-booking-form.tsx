@@ -1,9 +1,9 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
 import { createTourBooking } from "@/app/actions/booking-actions"
 import { BookingConfirmationDialog } from "@/components/dialogs/booking-confirmation-dialog"
+import type React from "react"
+import { useState } from "react"
 
 interface TourBookingFormProps {
   tourId: string
@@ -23,6 +23,7 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isRateLimited, setIsRateLimited] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [bookingResult, setBookingResult] = useState<Record<string, unknown> | null>(null)
 
@@ -35,6 +36,7 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
     e.preventDefault()
     setIsSubmitting(true)
     setError(null)
+    setIsRateLimited(false)
 
     try {
       const result = await createTourBooking({
@@ -48,7 +50,12 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
         setShowConfirmation(true)
         setIsSubmitted(true)
       } else {
-        setError(result.message || "An error occurred. Please try again.")
+        if (result.rateLimited) {
+          setIsRateLimited(true)
+          setError(result.message || "Too many booking attempts. Please try again later.")
+        } else {
+          setError(result.message || "Failed to create booking. Please try again.")
+        }
       }
     } catch {
       setError("An unexpected error occurred. Please try again.")
@@ -57,132 +64,16 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
     }
   }
 
-  // Get today's date in YYYY-MM-DD format for min date
-  const today = new Date().toISOString().split("T")[0]
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const minDate = tomorrow.toISOString().split("T")[0]
 
-  return (
-    <>
-      <form onSubmit={handleSubmit}>
-        {isSubmitted ? (
-          <div className="bg-[#1a5d1a]/10 border-2 border-[#1a5d1a] rounded-md p-4 text-center">
-            <p className="text-[#1a5d1a] font-bold">Booking Request Received!</p>
-            <p>We&apos;ll contact you shortly to confirm your booking for {tourName} and discuss payment options.</p>
-          </div>
-        ) : (
-        <div className="space-y-4">
-          {error && (
-            <div className="bg-red-50 border-2 border-red-200 rounded-md p-4 text-center">
-              <p className="text-red-600 font-bold">Error</p>
-              <p className="text-red-600">{error}</p>
-            </div>
-          )}
+  const oneYear = new Date()
+  oneYear.setFullYear(oneYear.getFullYear() + 1)
+  const maxDate = oneYear.toISOString().split("T")[0]
 
-          <div>
-            <label htmlFor="date" className="block text-[#85603f] mb-1">
-              Tour Date <span className="text-[#d83f31]">*</span>
-            </label>
-            <input
-              type="date"
-              id="date"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              min={today}
-              required
-              className="w-full px-4 py-2 border-2 border-[#85603f] rounded-md focus:outline-none focus:border-[#1a5d1a]"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="guests" className="block text-[#85603f] mb-1">
-              Number of Guests <span className="text-[#d83f31]">*</span>
-            </label>
-            <select
-              id="guests"
-              name="guests"
-              value={formData.guests}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border-2 border-[#85603f] rounded-md focus:outline-none focus:border-[#1a5d1a]"
-            >
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                <option key={num} value={num}>
-                  {num} {num === 1 ? "Guest" : "Guests"}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="name" className="block text-[#85603f] mb-1">
-              Your Name <span className="text-[#d83f31]">*</span>
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border-2 border-[#85603f] rounded-md focus:outline-none focus:border-[#1a5d1a]"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-[#85603f] mb-1">
-              Your Email <span className="text-[#d83f31]">*</span>
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border-2 border-[#85603f] rounded-md focus:outline-none focus:border-[#1a5d1a]"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="phone" className="block text-[#85603f] mb-1">
-              Phone Number <span className="text-[#d83f31]">*</span>
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-              placeholder="+1 (555) 123-4567"
-              className="w-full px-4 py-2 border-2 border-[#85603f] rounded-md focus:outline-none focus:border-[#1a5d1a]"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="specialRequests" className="block text-[#85603f] mb-1">
-              Special Requests
-            </label>
-            <textarea
-              id="specialRequests"
-              name="specialRequests"
-              value={formData.specialRequests}
-              onChange={handleChange}
-              rows={3}
-              placeholder="Any dietary restrictions, accessibility needs, or special requests..."
-              className="w-full px-4 py-2 border-2 border-[#85603f] rounded-md focus:outline-none focus:border-[#1a5d1a]"
-            ></textarea>
-          </div>
-
-          <button type="submit" disabled={isSubmitting} className="vintage-button w-full">
-            {isSubmitting ? "Processing..." : "Book Now"}
-          </button>
-        </div>
-      )}
-    </form>
-    
-    {/* Confirmation Dialog */}
-    {showConfirmation && bookingResult && (
+  if (isSubmitted && showConfirmation && bookingResult) {
+    return (
       <BookingConfirmationDialog
         isOpen={showConfirmation}
         onClose={() => setShowConfirmation(false)}
@@ -193,11 +84,164 @@ export function TourBookingForm({ tourId, tourName }: TourBookingFormProps) {
           customerName: formData.name,
           customerEmail: formData.email,
           customerPhone: formData.phone,
-          bookingId: bookingResult.bookingId as string,
-          totalAmount: undefined // Will be calculated in the component if needed
+          bookingId: (bookingResult.booking as Record<string, unknown>)?.id as string || 'unknown',
+          totalAmount: (bookingResult.booking as Record<string, unknown>)?.total_amount as number
         }}
       />
-    )}
-    </>
+    )
+  }
+
+  return (
+    <div className="bg-white p-8 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold text-[#1a5d1a] mb-6">Book Your Tour</h2>
+      
+      {error && (
+        <div className={`mb-6 p-4 rounded-md border-l-4 ${
+          isRateLimited 
+            ? 'bg-orange-50 border-orange-500 text-orange-700'
+            : 'bg-red-50 border-red-500 text-red-700'
+        }`}>
+          <div className="flex">
+            <div className="flex-shrink-0">
+              {isRateLimited ? (
+                <svg className="h-5 w-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              )}
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium">
+                {isRateLimited ? 'Booking Rate Limit Reached' : 'Booking Error'}
+              </p>
+              <p className="text-sm mt-1">{error}</p>
+              {isRateLimited && (
+                <p className="text-sm mt-2 text-orange-600">
+                  💡 <strong>Tip:</strong> You can try again in a few minutes, or contact us directly if you need immediate assistance.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+              Preferred Date *
+            </label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              min={minDate}
+              max={maxDate}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5d1a] focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="guests" className="block text-sm font-medium text-gray-700 mb-2">
+              Number of Guests *
+            </label>
+            <select
+              id="guests"
+              name="guests"
+              value={formData.guests}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5d1a] focus:border-transparent"
+            >
+              {[...Array(20)].map((_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {i + 1} {i + 1 === 1 ? "Guest" : "Guests"}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+              Full Name *
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5d1a] focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address *
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5d1a] focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+            Phone Number *
+          </label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5d1a] focus:border-transparent"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="specialRequests" className="block text-sm font-medium text-gray-700 mb-2">
+            Special Requests (Optional)
+          </label>
+          <textarea
+            id="specialRequests"
+            name="specialRequests"
+            value={formData.specialRequests}
+            onChange={handleChange}
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a5d1a] focus:border-transparent"
+            placeholder="Let us know if you have any dietary restrictions, accessibility needs, or special requests..."
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting || isRateLimited}
+          className={`w-full py-3 px-4 rounded-md font-medium transition-colors ${
+            isSubmitting || isRateLimited
+              ? 'bg-gray-400 cursor-not-allowed text-white'
+              : 'bg-[#1a5d1a] hover:bg-[#2d7a2d] text-white'
+          }`}
+        >
+          {isSubmitting ? "Processing..." : isRateLimited ? "Please Wait Before Trying Again" : "Book Now"}
+        </button>
+      </form>
+    </div>
   )
 }

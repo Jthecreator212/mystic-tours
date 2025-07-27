@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 import { verify } from 'jsonwebtoken';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 const ADMIN_PATH = '/mt-operations';
 
@@ -12,19 +12,24 @@ export function middleware(request: NextRequest) {
     if (process.env.ADMIN_ENABLED !== 'true') {
       return NextResponse.redirect(new URL('/404', request.url));
     }
-    // Authentication temporarily disabled for admin routes
-    // if (pathname === `${ADMIN_PATH}/auth`) {
-    //   return NextResponse.next();
-    // }
-    // const session = request.cookies.get('mt-admin-session');
-    // if (!session) {
-    //   return NextResponse.redirect(new URL(`${ADMIN_PATH}/auth`, request.url));
-    // }
-    // try {
-    //   verify(session.value, process.env.ADMIN_SESSION_SECRET!);
-    // } catch {
-    //   return NextResponse.redirect(new URL(`${ADMIN_PATH}/auth`, request.url));
-    // }
+    
+    // Allow access to auth page without authentication
+    if (pathname === `${ADMIN_PATH}/auth`) {
+      return NextResponse.next();
+    }
+    
+    // Check for valid session
+    const session = request.cookies.get('mt-admin-session');
+    if (!session) {
+      return NextResponse.redirect(new URL(`${ADMIN_PATH}/auth`, request.url));
+    }
+    
+    // Verify JWT token
+    try {
+      verify(session.value, process.env.ADMIN_SESSION_SECRET!);
+    } catch {
+      return NextResponse.redirect(new URL(`${ADMIN_PATH}/auth`, request.url));
+    }
   }
   
   // TACTICAL: Deploy decoy/honeypot
@@ -37,6 +42,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
+  runtime: 'nodejs', // Force Node.js runtime to support jsonwebtoken
   matcher: [
     '/mt-operations/:path*',
     '/admin/:path*',

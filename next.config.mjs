@@ -8,7 +8,14 @@ const nextConfig = {
     },
     // Optimize bundle
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+
+
+    // Faster builds in development
+    forceSwcTransforms: true,
   },
+
+  // Move serverComponentsExternalPackages to root level for Next.js 15
+  serverExternalPackages: ['bcryptjs', 'jsonwebtoken'],
 
   // Image optimization
   images: {

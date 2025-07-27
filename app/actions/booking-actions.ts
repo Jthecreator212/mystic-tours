@@ -1,7 +1,10 @@
 "use server"
 
-import { z } from "zod"
-import { supabaseAdmin } from "@/lib/supabase"
+import { formatBookingMessage, sendTelegramMessage } from "@/lib/notifications/telegram";
+import { supabaseAdmin } from "@/lib/supabase";
+import { checkTourBookingRateLimit, getClientIP } from "@/lib/utils/rate-limiting";
+import { headers } from "next/headers";
+import { z } from "zod";
 
 const bookingFormSchema = z.object({
   tourId: z.string().uuid(),
@@ -26,6 +29,24 @@ export async function createTourBooking(formData: z.infer<typeof bookingFormSche
   }
 
   try {
+    // Get client IP for rate limiting
+    const headersList = await headers();
+    const clientIP = getClientIP(headersList);
+    
+    // Check rate limits before processing
+    const rateLimitResult = await checkTourBookingRateLimit(clientIP, parsedData.data.email);
+    
+    if (!rateLimitResult.success) {
+      console.log(`🚫 Rate limit exceeded for IP: ${clientIP}, Email: ${parsedData.data.email}`);
+      return {
+        success: false,
+        message: rateLimitResult.message || "Too many booking attempts. Please try again later.",
+        rateLimited: true,
+      };
+    }
+
+    console.log(`✅ Rate limit check passed for IP: ${clientIP}, Email: ${parsedData.data.email}, Remaining: ${rateLimitResult.remaining}`);
+
     const { data: tour, error: tourError } = await supabaseAdmin
       .from("tours")
       .select("price")
@@ -66,118 +87,38 @@ export async function createTourBooking(formData: z.infer<typeof bookingFormSche
       }
     }
 
+    // Send Telegram notification
+    console.log("💬 Sending Telegram notification...");
+    try {
+      const message = formatBookingMessage({
+        customerName: parsedData.data.name,
+        customerEmail: parsedData.data.email,
+        customerPhone: parsedData.data.phone,
+        tourName: parsedData.data.tourName,
+        bookingDate: parsedData.data.date,
+        numberOfGuests: parsedData.data.guests,
+        totalAmount: totalAmount,
+        specialRequests: parsedData.data.specialRequests,
+        bookingId: booking.id
+      });
+
+      await sendTelegramMessage(message);
+      console.log("✅ Telegram notification sent successfully");
+    } catch (telegramError) {
+      console.error("❌ Failed to send Telegram notification:", telegramError);
+      // Don't fail the booking if Telegram fails
+    }
+
     return {
       success: true,
-      message: "Thank you for your booking! We will contact you shortly to confirm and discuss payment options.",
-      bookingId: booking.id,
+      message: "Booking created successfully!",
+      booking: booking,
     }
   } catch (error) {
-    console.error("Unexpected error:", error)
+    console.error("Error creating booking:", error)
     return {
       success: false,
       message: "An unexpected error occurred. Please try again.",
     }
   }
 }
-
-interface NotificationData {
-  bookingId: string;
-  tourName: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail: string;
-  bookingDate: string;
-  numberOfGuests: number;
-  totalAmount: number;
-  specialRequests?: string;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function _sendTelegramNotification(data: NotificationData) {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-
-  if (!botToken || !chatId) {
-    console.error("Telegram bot token or chat ID is not configured in .env.local");
-    return {
-      success: false,
-      message: "Telegram credentials not configured."
-    };
-  }
-
-  const message = formatTelegramMessage(data);
-  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: 'Markdown',
-      }),
-    });
-
-    const result = await response.json() as Record<string, unknown>;
-
-    if (!result.ok) {
-      throw new Error(`Telegram API error: ${result.description}`);
-    }
-
-    return {
-      success: true,
-      message: "Telegram notification sent successfully",
-    }
-  } catch (error) {
-    console.error("Telegram notification error:", error);
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Unknown error",
-    }
-  }
-}
-
-function formatTelegramMessage(data: NotificationData): string {
-  const formattedDate = new Date(data.bookingDate).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
-  const formattedAmount = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(data.totalAmount);
-
-  let message = `🌴 *Mystic Tours - New Booking!* 🌴\n\n`;
-  message += `A new booking has been requested. Please review the details below.\n\n`;
-
-  message += `🎫 *Booking Details*\n`;
-  message += `------------------------------------\n`;
-  message += `🗺️ *Tour:* ${data.tourName}\n`;
-  message += `🗓️ *Date:* ${formattedDate}\n`;
-  message += `🧑‍🤝‍🧑 *Guests:* ${data.numberOfGuests}\n`;
-  message += `💰 *Total Amount:* *${formattedAmount}*\n`;
-  if (data.specialRequests) {
-    message += `📝 *Special Requests:* ${data.specialRequests}\n`;
-  }
-  message += `🆔 *Booking ID:* \`${data.bookingId}\`\n`;
-  message += `------------------------------------\n\n`;
-
-  message += `👤 *Customer Info*\n`;
-  message += `------------------------------------\n`;
-  message += `👨‍🦱 *Name:* ${data.customerName}\n`;
-  message += `📞 *Phone:* \`${data.customerPhone}\`\n`;
-  message += `✉️ *Email:* ${data.customerEmail}\n`;
-  message += `------------------------------------\n\n`;
-
-  message += `*🚨 ACTION REQUIRED 🚨*\n`;
-  message += `Please call the customer at *${data.customerPhone}* to confirm the booking and discuss payment options.\n\n`;
-  message += `🤖 _Mystic Booking Bot_`;
-
-  return message;
-} 
