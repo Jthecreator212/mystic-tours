@@ -1,151 +1,186 @@
-import { supabaseAdmin } from '@/lib/supabase';
-import { createAppError, createErrorResponse, ERROR_CODES } from '@/lib/utils/error-handling';
+import { supabaseAdmin } from '@/lib/supabase/supabase';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-// Tour validation schema
 const tourSchema = z.object({
-  title: z.string().min(2, 'Title must be at least 2 characters').max(200, 'Title is too long'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  price: z.number().positive('Price must be positive'),
+  name: z.string().min(1, 'Tour name is required'),
+  slug: z.string().min(1, 'Slug is required'),
+  short_description: z.string().min(1, 'Short description is required'),
+  description: z.string().min(1, 'Description is required'),
+  price: z.number().min(0, 'Price must be positive'),
   duration: z.string().min(1, 'Duration is required'),
-  max_people: z.number().min(1, 'Maximum people must be at least 1').max(50, 'Maximum people cannot exceed 50'),
-  location: z.string().min(2, 'Location must be at least 2 characters'),
-  image_url: z.string().url('Invalid image URL').optional(),
-  is_active: z.boolean().default(true),
+  max_passengers: z.number().min(1, 'Max passengers must be at least 1'),
+  min_passengers: z.number().min(1, 'Min passengers must be at least 1'),
+  category: z.string().optional(),
+  difficulty: z.enum(['easy', 'moderate', 'challenging', 'expert']).default('easy'),
+  featured_image: z.string().optional(),
+  gallery_images: z.array(z.string()).optional(),
+  highlights: z.array(z.string()).optional(),
+  included: z.array(z.string()).optional(),
+  not_included: z.array(z.string()).optional(),
+  requirements: z.array(z.string()).optional(),
+  status: z.enum(['draft', 'published', 'archived']).default('draft'),
+  seo_title: z.string().optional(),
+  seo_description: z.string().optional(),
+  currency: z.string().default('USD'),
+  location: z.object({
+    city: z.string(),
+    country: z.string(),
+    coordinates: z.object({
+      lat: z.number(),
+      lng: z.number()
+    })
+  }).optional(),
+  availability: z.object({
+    available: z.boolean(),
+    max_bookings: z.number()
+  }).optional(),
 });
+
+const tourUpdateSchema = tourSchema.partial();
 
 export async function GET() {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error: dbError } = await supabaseAdmin
       .from('tours')
       .select('*')
       .order('created_at', { ascending: false });
-      
-    if (error) {
-      console.error('Error fetching tours:', error);
-      const dbError = createAppError(
-        ERROR_CODES.DB_QUERY,
-        'Failed to fetch tours',
-        'Unable to retrieve tour data'
-      );
+
+    if (dbError) {
+      console.error('Database error:', dbError.message);
       return NextResponse.json(
-        createErrorResponse('DB_QUERY', 'Failed to fetch tours'),
-        { status: 503 }
+        { success: false, error: 'Failed to fetch tours' },
+        { status: 500 }
       );
     }
-    
-    return NextResponse.json({ 
-      success: true,
-      tours: data || [],
-      message: 'Tours retrieved successfully'
-    });
-  } catch (error) {
-    console.error('Unexpected error fetching tours:', error);
+
+    return NextResponse.json({ success: true, data });
+  } catch (err) {
+    console.error('Unexpected error fetching tours:', err);
     return NextResponse.json(
-      createErrorResponse('INTERNAL_ERROR', 'Unexpected error occurred'),
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    // Parse request body
-    let body;
-    try {
-      body = await req.json();
-    } catch (parseError) {
-      const error = createAppError(
-        ERROR_CODES.VALIDATION_FAILED,
-        'Invalid JSON in request body',
-        'Please check your request format'
-      );
+    const body = await request.json();
+    
+    // Validate input
+    const parsedData = tourSchema.safeParse(body);
+    if (!parsedData.success) {
       return NextResponse.json(
-        createErrorResponse('VALIDATION_FAILED', 'Invalid request format'),
+        { success: false, error: 'Invalid tour data', details: parsedData.error },
         { status: 400 }
       );
     }
-    
-    // Validate input data
-    const validationResult = tourSchema.safeParse(body);
-    if (!validationResult.success) {
-      console.error('Tour validation failed:', validationResult.error.flatten().fieldErrors);
-      const error = createAppError(
-        ERROR_CODES.VALIDATION_FAILED,
-        'Invalid tour data',
-        'Please check all required fields'
-      );
-      return NextResponse.json(
-        createErrorResponse('VALIDATION_FAILED', 'Invalid tour data', validationResult.error.flatten().fieldErrors),
-        { status: 400 }
-      );
-    }
-    
-    const validatedData = validationResult.data;
-    
-    // Check if tour with same title already exists
-    const { data: existingTour, error: checkError } = await supabaseAdmin
+
+    // Transform data to match database schema
+    const tourData = {
+      title: parsedData.data.name,
+      slug: parsedData.data.slug,
+      short_description: parsedData.data.short_description,
+      description: parsedData.data.description,
+      price: parsedData.data.price,
+      duration: parsedData.data.duration,
+      group_size: `${parsedData.data.max_passengers} people`,
+      includes: parsedData.data.included || [],
+      departure: 'Hotel pickup',
+      languages: ['English'],
+      image_url: parsedData.data.featured_image || '',
+      highlights: parsedData.data.highlights || [],
+      itinerary: [],
+      categories: parsedData.data.category ? [parsedData.data.category] : [],
+      tags: [],
+      status: parsedData.data.status,
+      seo_title: parsedData.data.seo_title,
+      seo_description: parsedData.data.seo_description,
+    };
+
+    const { data, error: dbError } = await supabaseAdmin
       .from('tours')
-      .select('id')
-      .eq('title', validatedData.title)
-      .single();
-      
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
-      console.error('Error checking existing tour:', checkError);
-      const dbError = createAppError(
-        ERROR_CODES.DB_QUERY,
-        'Failed to check existing tour',
-        'Database error occurred'
-      );
-      return NextResponse.json(
-        createErrorResponse('DB_QUERY', 'Failed to check existing tour'),
-        { status: 503 }
-      );
-    }
-    
-    if (existingTour) {
-      const error = createAppError(
-        ERROR_CODES.DB_CONSTRAINT,
-        'Tour with this title already exists',
-        'Please use a different title'
-      );
-      return NextResponse.json(
-        createErrorResponse('DB_CONSTRAINT', 'Tour with this title already exists'),
-        { status: 409 }
-      );
-    }
-    
-    // Insert tour into database
-    const { data: tour, error: insertError } = await supabaseAdmin
-      .from('tours')
-      .insert([validatedData])
+      .insert([tourData])
       .select()
       .single();
-      
-    if (insertError) {
-      console.error('Error inserting tour:', insertError);
-      const error = createAppError(
-        ERROR_CODES.DB_QUERY,
-        'Failed to create tour',
-        'Database error occurred while saving tour'
-      );
+
+    if (dbError) {
+      console.error('Database error:', dbError.message);
       return NextResponse.json(
-        createErrorResponse('DB_QUERY', 'Failed to create tour'),
-        { status: 503 }
+        { success: false, error: 'Failed to create tour' },
+        { status: 500 }
       );
     }
-    
-    return NextResponse.json({ 
-      success: true,
-      tour: tour,
-      message: 'Tour created successfully'
-    });
-    
-  } catch (error) {
-    console.error('Unexpected error creating tour:', error);
+
+    return NextResponse.json({ success: true, data });
+  } catch (err) {
+    console.error('Unexpected error creating tour:', err);
     return NextResponse.json(
-      createErrorResponse('INTERNAL_ERROR', 'Unexpected error occurred'),
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, ...tourData } = body;
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Tour ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate input
+    const parsedData = tourUpdateSchema.safeParse(tourData);
+    if (!parsedData.success) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid tour data', details: parsedData.error },
+        { status: 400 }
+      );
+    }
+
+    // Transform data to match database schema
+    const updateData: any = {};
+    if (parsedData.data.name) updateData.title = parsedData.data.name;
+    if (parsedData.data.slug) updateData.slug = parsedData.data.slug;
+    if (parsedData.data.short_description) updateData.short_description = parsedData.data.short_description;
+    if (parsedData.data.description) updateData.description = parsedData.data.description;
+    if (parsedData.data.price !== undefined) updateData.price = parsedData.data.price;
+    if (parsedData.data.duration) updateData.duration = parsedData.data.duration;
+    if (parsedData.data.max_passengers) updateData.group_size = `${parsedData.data.max_passengers} people`;
+    if (parsedData.data.included) updateData.includes = parsedData.data.included;
+    if (parsedData.data.featured_image) updateData.image_url = parsedData.data.featured_image;
+    if (parsedData.data.highlights) updateData.highlights = parsedData.data.highlights;
+    if (parsedData.data.category) updateData.categories = [parsedData.data.category];
+    if (parsedData.data.status) updateData.status = parsedData.data.status;
+    if (parsedData.data.seo_title) updateData.seo_title = parsedData.data.seo_title;
+    if (parsedData.data.seo_description) updateData.seo_description = parsedData.data.seo_description;
+
+    const { data, error: dbError } = await supabaseAdmin
+      .from('tours')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Database error:', dbError.message);
+      return NextResponse.json(
+        { success: false, error: 'Failed to update tour' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true, data });
+  } catch (err) {
+    console.error('Unexpected error updating tour:', err);
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }

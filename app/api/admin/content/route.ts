@@ -1,164 +1,150 @@
-import { supabaseAdmin } from '@/lib/supabase';
-import { createAppError, createErrorResponse, ERROR_CODES } from '@/lib/utils/error-handling';
+import { supabaseAdmin } from '@/lib/supabase/supabase';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-// Content validation schema
 const contentSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title is too long'),
-  content: z.string().min(10, 'Content must be at least 10 characters'),
-  type: z.enum(['page', 'section', 'block']),
+  title: z.string().min(1, 'Title is required'),
+  content: z.string().min(1, 'Content is required'),
   page: z.string().min(1, 'Page is required'),
-  is_active: z.boolean().default(true),
-  order_index: z.number().int().min(0, 'Order index must be non-negative').optional(),
+  order_index: z.number().optional(),
+});
+
+const contentUpdateSchema = z.object({
+  id: z.number(),
+  title: z.string().min(1, 'Title is required'),
+  content: z.string().min(1, 'Content is required'),
+  page: z.string().min(1, 'Page is required'),
+  order_index: z.number().optional(),
 });
 
 export async function GET() {
   try {
-    const { data, error } = await supabaseAdmin
-      .from('content_blocks')
+    const { data, error: dbError } = await supabaseAdmin
+      .from('content')
       .select('*')
-      .order('order_index', { ascending: true })
       .order('created_at', { ascending: false });
-      
-    if (error) {
-      console.error('Error fetching content:', error);
-      const dbError = createAppError(
-        ERROR_CODES.DB_QUERY,
-        'Failed to fetch content',
-        'Unable to retrieve content data'
-      );
+
+    if (dbError) {
+      console.error('Database error:', dbError.message);
       return NextResponse.json(
-        createErrorResponse('DB_QUERY', 'Failed to fetch content'),
-        { status: 503 }
+        { success: false, error: 'Failed to fetch content' },
+        { status: 500 }
       );
     }
-    
-    return NextResponse.json({ 
-      success: true,
-      content: data || [],
-      message: 'Content retrieved successfully'
-    });
-  } catch (error) {
-    console.error('Unexpected error fetching content:', error);
+
+    return NextResponse.json({ success: true, data });
+  } catch {
     return NextResponse.json(
-      createErrorResponse('INTERNAL_ERROR', 'Unexpected error occurred'),
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    // Parse request body
-    let body;
-    try {
-      body = await req.json();
-    } catch (parseError) {
-      const error = createAppError(
-        ERROR_CODES.VALIDATION_FAILED,
-        'Invalid JSON in request body',
-        'Please check your request format'
-      );
+    const body = await request.json();
+    
+    // Validate input
+    const parsedData = contentSchema.safeParse(body);
+    if (!parsedData.success) {
       return NextResponse.json(
-        createErrorResponse('VALIDATION_FAILED', 'Invalid request format'),
+        { success: false, error: 'Invalid content data' },
         { status: 400 }
       );
     }
-    
-    // Validate input data
-    const validationResult = contentSchema.safeParse(body);
-    if (!validationResult.success) {
-      console.error('Content validation failed:', validationResult.error.flatten().fieldErrors);
-      const error = createAppError(
-        ERROR_CODES.VALIDATION_FAILED,
-        'Invalid content data',
-        'Please check all required fields'
-      );
-      return NextResponse.json(
-        createErrorResponse('VALIDATION_FAILED', 'Invalid content data', validationResult.error.flatten().fieldErrors),
-        { status: 400 }
-      );
-    }
-    
-    const validatedData = validationResult.data;
-    
-    // Check if content with same title and page already exists
-    const { data: existingContent, error: checkError } = await supabaseAdmin
-      .from('content_blocks')
-      .select('id')
-      .eq('title', validatedData.title)
-      .eq('page', validatedData.page)
-      .single();
-      
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
-      console.error('Error checking existing content:', checkError);
-      const dbError = createAppError(
-        ERROR_CODES.DB_QUERY,
-        'Failed to check existing content',
-        'Database error occurred'
-      );
-      return NextResponse.json(
-        createErrorResponse('DB_QUERY', 'Failed to check existing content'),
-        { status: 503 }
-      );
-    }
-    
-    if (existingContent) {
-      const error = createAppError(
-        ERROR_CODES.DB_CONSTRAINT,
-        'Content with this title already exists on this page',
-        'Please use a different title or page'
-      );
-      return NextResponse.json(
-        createErrorResponse('DB_CONSTRAINT', 'Content with this title already exists on this page'),
-        { status: 409 }
-      );
-    }
-    
-    // Set order_index if not provided
-    if (!validatedData.order_index) {
-      const { data: lastContent } = await supabaseAdmin
-        .from('content_blocks')
-        .select('order_index')
-        .eq('page', validatedData.page)
-        .order('order_index', { ascending: false })
-        .limit(1)
-        .single();
-        
-      validatedData.order_index = (lastContent?.order_index || 0) + 1;
-    }
-    
-    // Insert content into database
-    const { data: content, error: insertError } = await supabaseAdmin
-      .from('content_blocks')
-      .insert([validatedData])
+
+    const { data, error: dbError } = await supabaseAdmin
+      .from('content')
+      .insert([parsedData.data])
       .select()
       .single();
-      
-    if (insertError) {
-      console.error('Error inserting content:', insertError);
-      const error = createAppError(
-        ERROR_CODES.DB_QUERY,
-        'Failed to create content',
-        'Database error occurred while saving content'
-      );
+
+    if (dbError) {
+      console.error('Database error:', dbError.message);
       return NextResponse.json(
-        createErrorResponse('DB_QUERY', 'Failed to create content'),
-        { status: 503 }
+        { success: false, error: 'Failed to create content' },
+        { status: 500 }
       );
     }
-    
-    return NextResponse.json({ 
-      success: true,
-      content,
-      message: 'Content created successfully'
-    });
-    
-  } catch (error) {
-    console.error('Unexpected error creating content:', error);
+
+    return NextResponse.json({ success: true, data });
+  } catch {
     return NextResponse.json(
-      createErrorResponse('INTERNAL_ERROR', 'Unexpected error occurred'),
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    
+    // Validate input
+    const parsedData = contentUpdateSchema.safeParse(body);
+    if (!parsedData.success) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid content data' },
+        { status: 400 }
+      );
+    }
+
+    const { id, ...updateData } = parsedData.data;
+    
+    const { data, error: dbError } = await supabaseAdmin
+      .from('content')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Database error:', dbError.message);
+      return NextResponse.json(
+        { success: false, error: 'Failed to update content' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true, data });
+  } catch {
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Content ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const { error: dbError } = await supabaseAdmin
+      .from('content')
+      .delete()
+      .eq('id', id);
+
+    if (dbError) {
+      console.error('Database error:', dbError.message);
+      return NextResponse.json(
+        { success: false, error: 'Failed to delete content' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }

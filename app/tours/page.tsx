@@ -10,9 +10,10 @@ export const revalidate = 60; // Revalidate data every 60 seconds
 async function getTours() {
   const { data, error } = await supabase
     .from('tours')
-    .select('id, title, short_description, image_url, price, duration, slug')
+    .select('id, title, short_description, image_url, price, duration, slug, status')
+    .eq('status', 'published')
     .order('created_at', { ascending: true })
-    .limit(3);
+    
 
   if (error) {
     console.error('Error fetching tours:', error);
@@ -67,3 +68,5 @@ export default async function ToursPage() {
     </main>
   )
 }
+
+

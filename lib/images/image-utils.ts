@@ -1,130 +1,67 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabase/supabase';
 
-// Environment variables with fallbacks for development
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bsxloajxptdsgqkxbiem.supabase.co'
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzeGxvYWp4cHRkc2dxa3hiaWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY5MzUyMzMsImV4cCI6MjA2MjUxMTIzM30.lhZoU7QeDRI4yBVvfOiRs1nBTe7BDkwDxchNWsA1kXk'
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzeGxvYWp4cHRkc2dxa3hiaWVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjkzNTIzMywiZXhwIjoyMDYyNTExMjMzfQ.q-T_wVjHm5MtkyvO93pdnuQiXkPIEpYsqeLcFI8sryA'
-
-// Validate required environment variables
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing required Supabase environment variables for image utilities')
-}
-
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true
-  }
-});
-
-// Storage bucket names
-export const BUCKETS = {
-  GALLERY: 'gallery-images',
-  TOURS: 'tour-images',
-  SITE: 'site-images',
-  TEAM: 'team-images',
-} as const;
-
-/**
- * Upload an image to Supabase Storage
- * @param file The file to upload
- * @param bucket The storage bucket to upload to
- * @param customFileName Optional custom filename
- * @returns The public URL of the uploaded image
- */
-export async function uploadImage(
-  file: File,
-  bucket: keyof typeof BUCKETS,
-  customFileName?: string
-): Promise<string> {
+// Image upload utility
+export async function uploadImage(file: File, bucket: string = 'gallery'): Promise<{ url: string; path: string } | null> {
   try {
-    const fileName = customFileName || `${Date.now()}-${file.name}`;
-    const filePath = `${bucket}/${fileName}`;
-
-    const { data, error } = await supabase.storage
-      .from(BUCKETS[bucket])
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
+    const fileName = `${Date.now()}-${file.name}`;
+    const { data, error } = await supabaseAdmin.storage
+      .from(bucket)
+      .upload(fileName, file);
 
     if (error) {
-      throw new Error(`Upload failed: ${error.message}`);
+      console.error('Image upload error:', error);
+      return null;
     }
 
-    const { data: urlData } = supabase.storage
-      .from(BUCKETS[bucket])
-      .getPublicUrl(filePath);
+    const { data: urlData } = supabaseAdmin.storage
+      .from(bucket)
+      .getPublicUrl(fileName);
 
-    return urlData.publicUrl;
-  } catch (error) {
-    console.error('Image upload error:', error);
-    throw new Error('Failed to upload image');
+    return {
+      url: urlData.publicUrl,
+      path: data.path
+    };
+  } catch (err) {
+    console.error('Image upload error:', err);
+    return null;
   }
 }
 
-/**
- * Delete an image from Supabase Storage
- * @param filePath The path to the file to delete
- * @param bucket The storage bucket
- */
-export async function deleteImage(
-  filePath: string,
-  bucket: keyof typeof BUCKETS
-): Promise<void> {
+// Image deletion utility
+export async function deleteImage(path: string, bucket: string = 'gallery'): Promise<boolean> {
   try {
-    const { error } = await supabase.storage
-      .from(BUCKETS[bucket])
-      .remove([filePath]);
+    const { error } = await supabaseAdmin.storage
+      .from(bucket)
+      .remove([path]);
 
     if (error) {
-      throw new Error(`Delete failed: ${error.message}`);
+      console.error('Image deletion error:', error);
+      return false;
     }
-  } catch (error) {
-    console.error('Image deletion error:', error);
-    throw new Error('Failed to delete image');
+
+    return true;
+  } catch (err) {
+    console.error('Image deletion error:', err);
+    return false;
   }
 }
 
-/**
- * Get a list of images from a bucket
- * @param bucket The storage bucket
- * @param folder Optional folder path
- * @returns Array of image URLs
- */
-export async function listImages(
-  bucket: keyof typeof BUCKETS,
-  folder?: string
-): Promise<string[]> {
+// List images utility
+export async function listImages(bucket: string = 'gallery'): Promise<string[]> {
   try {
-    const { data, error } = await supabase.storage
-      .from(BUCKETS[bucket])
-      .list(folder || '', {
-        limit: 100,
-        offset: 0
-      });
+    const { data, error } = await supabaseAdmin.storage
+      .from(bucket)
+      .list();
 
     if (error) {
-      throw new Error(`List failed: ${error.message}`);
+      console.error('Image listing error:', error);
+      return [];
     }
 
-    return data
-      .filter(item => !item.name.endsWith('/'))
-      .map(item => {
-        const { data: urlData } = supabase.storage
-          .from(BUCKETS[bucket])
-          .getPublicUrl(folder ? `${folder}/${item.name}` : item.name);
-        return urlData.publicUrl;
-      });
-  } catch (error) {
-    console.error('Image listing error:', error);
-    throw new Error('Failed to list images');
+    return data?.map(file => file.name) || [];
+  } catch (err) {
+    console.error('Image listing error:', err);
+    return [];
   }
 }
 

@@ -1,148 +1,154 @@
-import { supabaseAdmin } from '@/lib/supabase';
-import { createAppError, createErrorResponse, ERROR_CODES } from '@/lib/utils/error-handling';
+import { supabaseAdmin } from '@/lib/supabase/supabase';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-// Driver validation schema
 const driverSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long'),
-  phone: z.string().min(10, 'Phone must be at least 10 characters'),
-  email: z.string().email('Invalid email address').optional(),
-  vehicle: z.string().min(1, 'Vehicle information is required'),
-  status: z.enum(['available', 'busy', 'offline']).default('available'),
+  name: z.string().min(1, 'Name is required'),
+  phone: z.string().min(1, 'Phone is required'),
+  email: z.string().email('Valid email is required'),
+  license_number: z.string().min(1, 'License number is required'),
+  vehicle_type: z.string().min(1, 'Vehicle type is required'),
+  is_active: z.boolean().default(true),
+});
+
+const driverUpdateSchema = z.object({
+  id: z.number(),
+  name: z.string().min(1, 'Name is required'),
+  phone: z.string().min(1, 'Phone is required'),
+  email: z.string().email('Valid email is required'),
+  license_number: z.string().min(1, 'License number is required'),
+  vehicle_type: z.string().min(1, 'Vehicle type is required'),
+  is_active: z.boolean().default(true),
 });
 
 export async function GET() {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error: dbError } = await supabaseAdmin
       .from('drivers')
       .select('*')
-      .order('name', { ascending: true });
-      
-    if (error) {
-      console.error('Error fetching drivers:', error);
-      const dbError = createAppError(
-        ERROR_CODES.DB_QUERY,
-        'Failed to fetch drivers',
-        'Unable to retrieve driver data'
-      );
+      .order('created_at', { ascending: false });
+
+    if (dbError) {
+      console.error('Database error:', dbError.message);
       return NextResponse.json(
-        createErrorResponse('DB_QUERY', 'Failed to fetch drivers'),
-        { status: 503 }
+        { success: false, error: 'Failed to fetch drivers' },
+        { status: 500 }
       );
     }
-    
-    return NextResponse.json({ 
-      success: true,
-      drivers: data || [],
-      message: 'Drivers retrieved successfully'
-    });
-  } catch (error) {
-    console.error('Unexpected error fetching drivers:', error);
+
+    return NextResponse.json({ success: true, data });
+  } catch {
     return NextResponse.json(
-      createErrorResponse('INTERNAL_ERROR', 'Unexpected error occurred'),
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    // Parse request body
-    let body;
-    try {
-      body = await req.json();
-    } catch (parseError) {
-      const error = createAppError(
-        ERROR_CODES.VALIDATION_FAILED,
-        'Invalid JSON in request body',
-        'Please check your request format'
-      );
+    const body = await request.json();
+    
+    // Validate input
+    const parsedData = driverSchema.safeParse(body);
+    if (!parsedData.success) {
       return NextResponse.json(
-        createErrorResponse('VALIDATION_FAILED', 'Invalid request format'),
+        { success: false, error: 'Invalid driver data' },
         { status: 400 }
       );
     }
-    
-    // Validate input data
-    const validationResult = driverSchema.safeParse(body);
-    if (!validationResult.success) {
-      console.error('Driver validation failed:', validationResult.error.flatten().fieldErrors);
-      const error = createAppError(
-        ERROR_CODES.VALIDATION_FAILED,
-        'Invalid driver data',
-        'Please check all required fields'
-      );
-      return NextResponse.json(
-        createErrorResponse('VALIDATION_FAILED', 'Invalid driver data', validationResult.error.flatten().fieldErrors),
-        { status: 400 }
-      );
-    }
-    
-    const validatedData = validationResult.data;
-    
-    // Check if driver with same phone already exists
-    const { data: existingDriver, error: checkError } = await supabaseAdmin
+
+    const { data, error: dbError } = await supabaseAdmin
       .from('drivers')
-      .select('id')
-      .eq('phone', validatedData.phone)
-      .single();
-      
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
-      console.error('Error checking existing driver:', checkError);
-      const dbError = createAppError(
-        ERROR_CODES.DB_QUERY,
-        'Failed to check existing driver',
-        'Database error occurred'
-      );
-      return NextResponse.json(
-        createErrorResponse('DB_QUERY', 'Failed to check existing driver'),
-        { status: 503 }
-      );
-    }
-    
-    if (existingDriver) {
-      const error = createAppError(
-        ERROR_CODES.DB_CONSTRAINT,
-        'Driver with this phone number already exists',
-        'Please use a different phone number'
-      );
-      return NextResponse.json(
-        createErrorResponse('DB_CONSTRAINT', 'Driver with this phone number already exists'),
-        { status: 409 }
-      );
-    }
-    
-    // Insert driver into database
-    const { data: driver, error: insertError } = await supabaseAdmin
-      .from('drivers')
-      .insert([validatedData])
+      .insert([parsedData.data])
       .select()
       .single();
-      
-    if (insertError) {
-      console.error('Error inserting driver:', insertError);
-      const error = createAppError(
-        ERROR_CODES.DB_QUERY,
-        'Failed to create driver',
-        'Database error occurred while saving driver'
-      );
+
+    if (dbError) {
+      console.error('Database error:', dbError.message);
       return NextResponse.json(
-        createErrorResponse('DB_QUERY', 'Failed to create driver'),
-        { status: 503 }
+        { success: false, error: 'Failed to create driver' },
+        { status: 500 }
       );
     }
-    
-    return NextResponse.json({ 
-      success: true,
-      driver: driver,
-      message: 'Driver created successfully'
-    });
-    
-  } catch (error) {
-    console.error('Unexpected error creating driver:', error);
+
+    return NextResponse.json({ success: true, data });
+  } catch {
     return NextResponse.json(
-      createErrorResponse('INTERNAL_ERROR', 'Unexpected error occurred'),
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    
+    // Validate input
+    const parsedData = driverUpdateSchema.safeParse(body);
+    if (!parsedData.success) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid driver data' },
+        { status: 400 }
+      );
+    }
+
+    const { id, ...updateData } = parsedData.data;
+    
+    const { data, error: dbError } = await supabaseAdmin
+      .from('drivers')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Database error:', dbError.message);
+      return NextResponse.json(
+        { success: false, error: 'Failed to update driver' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true, data });
+  } catch {
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Driver ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const { error: dbError } = await supabaseAdmin
+      .from('drivers')
+      .delete()
+      .eq('id', id);
+
+    if (dbError) {
+      console.error('Database error:', dbError.message);
+      return NextResponse.json(
+        { success: false, error: 'Failed to delete driver' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }

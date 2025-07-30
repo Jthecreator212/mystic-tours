@@ -1,6 +1,221 @@
 {
   "rules": [
     {
+      "name": "Build Success Guardian",
+      "description": "Prevent build failures through proactive checks and validations",
+      "priority": "critical",
+      "triggers": ["before_build", "before_commit", "before_deploy"],
+      "pre_build_checks": [
+        "validate_environment_variables",
+        "check_type_errors",
+        "run_linter",
+        "verify_imports",
+        "check_file_permissions",
+        "validate_config_files"
+      ],
+      "actions": [
+        "run_type_check",
+        "run_lint_check",
+        "validate_env_vars",
+        "check_dependencies",
+        "verify_build_config",
+        "test_critical_paths"
+      ]
+    },
+    {
+      "name": "Environment Variable Guardian",
+      "description": "Ensure all required environment variables are properly configured",
+      "priority": "critical",
+      "triggers": ["env_file_changes", "build_failure", "runtime_error"],
+      "required_env_vars": [
+        "SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_URL", 
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_JWT_SECRET",
+        "POSTGRES_URL",
+        "POSTGRES_PRISMA_URL",
+        "POSTGRES_URL_NON_POOLING",
+        "POSTGRES_USER"
+      ],
+      "actions": [
+        "validate_env_structure",
+        "check_env_format",
+        "verify_supabase_connection",
+        "test_database_connection"
+      ]
+    },
+    {
+      "name": "TypeScript Build Guardian",
+      "description": "Prevent TypeScript compilation errors before they reach build",
+      "priority": "high",
+      "triggers": ["ts_file_changes", "build_error", "type_error"],
+      "actions": [
+        "run_type_check",
+        "fix_type_errors",
+        "add_missing_types",
+        "validate_interfaces",
+        "check_generic_types"
+      ],
+      "type_check_rules": [
+        "strict_mode_enabled",
+        "no_implicit_any",
+        "explicit_return_types",
+        "proper_interface_definitions"
+      ]
+    },
+    {
+      "name": "Import Resolution Guardian",
+      "description": "Ensure all imports are properly resolved and dependencies are available",
+      "priority": "high",
+      "triggers": ["import_error", "module_not_found", "build_failure"],
+      "actions": [
+        "validate_import_paths",
+        "check_package_dependencies",
+        "verify_module_resolution",
+        "fix_import_statements"
+      ],
+      "import_rules": [
+        "use_absolute_paths_for_internal_imports",
+        "use_relative_paths_for_same_directory",
+        "validate_package_imports",
+        "check_export_statements"
+      ]
+    },
+    {
+      "name": "Next.js Configuration Guardian",
+      "description": "Ensure Next.js configuration is optimized for successful builds",
+      "priority": "high",
+      "triggers": ["config_changes", "build_failure", "performance_issues"],
+      "config_checks": [
+        "validate_image_domains",
+        "check_webpack_config",
+        "verify_experimental_features",
+        "validate_redirects",
+        "check_headers_config"
+      ],
+      "actions": [
+        "optimize_build_config",
+        "validate_image_patterns",
+        "check_turbo_settings",
+        "verify_webpack_fallbacks"
+      ]
+    },
+    {
+      "name": "Dependency Management Guardian",
+      "description": "Ensure all dependencies are properly installed and compatible",
+      "priority": "high",
+      "triggers": ["package_changes", "install_errors", "version_conflicts"],
+      "actions": [
+        "check_dependency_versions",
+        "validate_peer_dependencies",
+        "verify_package_lock",
+        "check_for_vulnerabilities"
+      ],
+      "dependency_rules": [
+        "use_exact_versions_for_critical_deps",
+        "pin_react_and_next_versions",
+        "validate_supabase_versions",
+        "check_radix_ui_compatibility"
+      ]
+    },
+    {
+      "name": "File System Guardian",
+      "description": "Prevent file system related build failures",
+      "priority": "medium",
+      "triggers": ["file_not_found", "permission_error", "path_error"],
+      "actions": [
+        "validate_file_paths",
+        "check_file_permissions",
+        "verify_directory_structure",
+        "clean_build_cache"
+      ],
+      "file_system_rules": [
+        "use_forward_slashes_in_paths",
+        "validate_case_sensitivity",
+        "check_file_encoding",
+        "verify_special_characters"
+      ]
+    },
+    {
+      "name": "Build Cache Guardian",
+      "description": "Manage build cache to prevent corruption and improve build reliability",
+      "priority": "medium",
+      "triggers": ["build_corruption", "cache_errors", "performance_degradation"],
+      "actions": [
+        "clean_next_cache",
+        "reset_turbo_cache",
+        "clear_node_modules_cache",
+        "verify_cache_integrity"
+      ],
+      "cache_management": [
+        "clean_cache_before_major_changes",
+        "reset_cache_on_dependency_updates",
+        "clear_cache_on_config_changes",
+        "monitor_cache_size"
+      ]
+    },
+    {
+      "name": "Windows Development Guardian",
+      "description": "Handle Windows-specific build issues and process management",
+      "priority": "critical",
+      "triggers": ["windows_error", "process_conflict", "path_issues"],
+      "windows_specific_rules": [
+        "use_powershell_commands",
+        "handle_long_paths",
+        "manage_node_processes",
+        "resolve_file_watcher_issues"
+      ],
+      "actions": [
+        "kill_conflicting_processes",
+        "clean_build_directories",
+        "reset_development_server",
+        "verify_powershell_execution_policy"
+      ]
+    },
+    {
+      "name": "ESLint Prevention Guardian",
+      "description": "Prevent common ESLint errors that cause build failures",
+      "priority": "high",
+      "triggers": ["lint_error", "build_failure", "code_quality_issues"],
+      "eslint_prevention_rules": [
+        "remove_unused_imports",
+        "escape_jsx_entities",
+        "use_proper_typescript_types",
+        "handle_react_hook_dependencies",
+        "use_next_image_component",
+        "proper_error_handling",
+        "fix_unused_destructured_variables",
+        "remove_unused_function_parameters",
+        "check_catch_block_parameters",
+        "use_underscore_prefix_for_unused_variables"
+      ],
+      "actions": [
+        "run_lint_fix",
+        "validate_jsx_syntax",
+        "check_typescript_strictness",
+        "verify_react_hooks"
+      ]
+    },
+    {
+      "name": "Build Process Guardian",
+      "description": "Ensure smooth build process with proper error handling",
+      "priority": "critical",
+      "triggers": ["build_start", "build_error", "deployment_prep"],
+      "build_process_checks": [
+        "validate_build_environment",
+        "check_memory_usage",
+        "verify_disk_space",
+        "test_critical_components"
+      ],
+      "actions": [
+        "run_pre_build_tests",
+        "validate_build_output",
+        "check_bundle_size",
+        "verify_static_generation"
+      ]
+    },
+    {
       "name": "Bug Documentation Master",
       "description": "Document every bug, fix, and lesson learned with structured reporting",
       "priority": "high",
@@ -94,6 +309,28 @@
       ]
     }
   ],
+  "build_success_checklist": {
+    "pre_build": [
+      "Run 'pnpm type-check' to catch TypeScript errors",
+      "Run 'pnpm lint' to catch ESLint errors", 
+      "Verify all environment variables are set",
+      "Check for any Git conflicts",
+      "Ensure no conflicting Node processes",
+      "Clean .next directory if needed"
+    ],
+    "during_build": [
+      "Monitor memory usage",
+      "Check for import resolution errors",
+      "Verify image optimization settings",
+      "Ensure proper webpack configuration"
+    ],
+    "post_build": [
+      "Verify build output structure",
+      "Check bundle size",
+      "Test critical pages",
+      "Validate static generation"
+    ]
+  },
   "memory_templates": {
     "repeated_build_error": {
       "title": "Repeated Build Error: {error_type}",
@@ -119,38 +356,95 @@
       "title": "Repeated API Error: {error_type}",
       "content": "API error '{error_message}' has occurred {count} times. Endpoint: {endpoint}. Solution: {solution}. Prevention: {prevention_measures}",
       "tags": ["api_error", "integration_issue", "repeated_issue"]
+    },
+    "build_success_pattern": {
+      "title": "Build Success Pattern: {pattern_name}",
+      "content": "Successful build achieved by following: {steps}. Key factors: {factors}. Time saved: {time_saved}",
+      "tags": ["build_success", "optimization", "best_practice"]
     }
   },
   "prevention_rules": {
     "build_errors": [
-      "Always run 'pnpm lint' before committing",
-      "Use TypeScript strict mode",
+      "Always run 'pnpm type-check' before building",
+      "Run 'pnpm lint' and fix all errors",
+      "Validate environment variables before build",
+      "Clean .next directory on build failures",
+      "Check for conflicting Node processes",
+      "Use proper TypeScript strict mode",
       "Add proper error boundaries",
-      "Validate environment variables"
+      "Validate all imports before building"
     ],
     "linter_errors": [
       "Use ESLint auto-fix before committing",
       "Add proper TypeScript types",
       "Follow consistent naming conventions",
-      "Use proper import statements"
+      "Use proper import statements",
+      "Escape JSX entities properly",
+      "Handle React hook dependencies correctly",
+      "Use Next.js Image component when possible",
+      "Remove unused imports and variables",
+      "Fix unused destructured variables (remove from destructuring)",
+      "Remove unused function parameters",
+      "Use underscore prefix for intentionally unused variables",
+      "Check for unused catch block parameters"
     ],
     "runtime_errors": [
       "Add comprehensive error handling",
       "Use try-catch blocks",
       "Validate user inputs",
-      "Add proper fallbacks"
+      "Add proper fallbacks",
+      "Handle async operations properly",
+      "Add error boundaries for React components"
     ],
     "database_errors": [
       "Add database connection pooling",
       "Use proper transaction handling",
       "Validate data before insertion",
-      "Add database constraints"
+      "Add database constraints",
+      "Handle connection timeouts",
+      "Add retry logic for failed operations"
     ],
     "api_errors": [
       "Add proper HTTP status codes",
       "Use consistent error response format",
       "Add input validation",
-      "Implement rate limiting"
+      "Implement rate limiting",
+      "Handle CORS properly",
+      "Add proper error logging"
+    ],
+    "windows_specific": [
+      "Use PowerShell commands for file operations",
+      "Handle long file paths properly",
+      "Kill conflicting Node processes with taskkill",
+      "Clean build cache regularly",
+      "Use forward slashes in import paths",
+      "Check file permissions on Windows"
+    ]
+  },
+  "quick_fixes": {
+    "build_failure": [
+      "taskkill /F /IM node.exe /T",
+      "Remove-Item .next -Recurse -Force -ErrorAction SilentlyContinue",
+      "pnpm install",
+      "pnpm dev"
+    ],
+    "type_errors": [
+      "pnpm type-check",
+      "Add proper TypeScript types",
+      "Fix import/export statements",
+      "Check for missing dependencies"
+    ],
+    "lint_errors": [
+      "pnpm lint --fix",
+      "Fix remaining manual errors",
+      "Check for unescaped JSX entities",
+      "Remove unused imports"
+    ],
+    "import_errors": [
+      "Check file paths and case sensitivity",
+      "Verify package dependencies",
+      "Check import/export statements",
+      "Validate module resolution"
     ]
   }
 } 

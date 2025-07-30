@@ -1,6 +1,6 @@
 import { airportPickupSchema } from '@/lib/schemas/form-schemas';
 import { supabaseAdmin } from '@/lib/supabase';
-import { createAppError, createErrorResponse, ERROR_CODES } from '@/lib/utils/error-handling';
+import { createErrorResponse } from '@/lib/utils/error-handling';
 import { NextResponse } from 'next/server';
 
 function calculatePrice(serviceType: 'pickup' | 'dropoff' | 'both'): number {
@@ -110,12 +110,7 @@ export async function POST(req: Request) {
     let body;
     try {
       body = await req.json();
-    } catch (parseError) {
-      const error = createAppError(
-        ERROR_CODES.VALIDATION_FAILED,
-        'Invalid JSON in request body',
-        'Please check your request format'
-      );
+    } catch {
       return NextResponse.json(
         createErrorResponse('VALIDATION_FAILED', 'Invalid request format'),
         { status: 400 }
@@ -128,11 +123,6 @@ export async function POST(req: Request) {
     const parsedData = airportPickupSchema.safeParse(body);
     if (!parsedData.success) {
       console.log('[API] Validation failed:', JSON.stringify(parsedData.error.flatten().fieldErrors));
-      const error = createAppError(
-        ERROR_CODES.VALIDATION_FAILED,
-        'Invalid airport pickup data',
-        'Please check all required fields'
-      );
       return NextResponse.json(
         createErrorResponse('VALIDATION_FAILED', 'Invalid airport pickup data', parsedData.error.flatten().fieldErrors),
         { status: 400 }
@@ -172,11 +162,6 @@ export async function POST(req: Request) {
       
     if (booking_error) {
       console.log('[API] DB insert error:', booking_error.message);
-      const error = createAppError(
-        ERROR_CODES.DB_QUERY,
-        'Failed to create airport pickup booking',
-        'Database error occurred while saving booking'
-      );
       return NextResponse.json(
         createErrorResponse('DB_QUERY', 'Failed to create airport pickup booking'),
         { status: 503 }
@@ -196,8 +181,8 @@ export async function POST(req: Request) {
         departure_date: parsedData.data.departure_date ? new Date(parsedData.data.departure_date).toISOString() : undefined,
       });
       console.log('[API] Telegram notification sent');
-    } catch (notificationError) {
-      console.error('[API] Telegram notification failed:', notificationError);
+    } catch {
+      console.error('[API] Telegram notification failed');
       // Don't fail the booking if Telegram fails
     }
     
@@ -226,11 +211,6 @@ export async function GET() {
       
     if (error) {
       console.error('Error fetching airport pickup bookings:', error);
-      const dbError = createAppError(
-        ERROR_CODES.DB_QUERY,
-        'Failed to fetch airport pickup bookings',
-        'Unable to retrieve booking data'
-      );
       return NextResponse.json(
         createErrorResponse('DB_QUERY', 'Failed to fetch airport pickup bookings'),
         { status: 503 }

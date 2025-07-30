@@ -1,29 +1,42 @@
 // Tour API types
 export interface Tour {
   id: string;
-  name: string;
+  title: string; // Database field name
   slug: string;
-  description: string;
   short_description: string;
-  duration: string;
+  description: string;
+  image_url: string; // Database field name
   price: number;
-  currency: string;
-  max_passengers: number;
-  min_passengers: number;
-  category: string;
-  difficulty: TourDifficulty;
-  included: string[];
-  not_included: string[];
-  itinerary: TourItinerary[];
-  images: TourImage[];
-  featured_image: string;
-  gallery_images: string[];
-  highlights: string[];
-  requirements: string[];
-  location: TourLocation;
-  availability: TourAvailability;
+  duration: string;
+  group_size: string; // Database field name
+  includes: string[]; // Database field name
+  departure: string; // Database field name
+  languages: string[]; // Database field name
   created_at: string;
   updated_at: string;
+  seo_title?: string;
+  seo_description?: string;
+  gallery_ids?: string[];
+  highlights?: string[];
+  itinerary?: any; // JSONB field
+  categories?: string[];
+  tags?: string[];
+  status?: string;
+
+  // Frontend convenience fields (mapped from database fields)
+  name?: string; // Maps to title
+  featured_image?: string; // Maps to image_url
+  max_passengers?: number; // Extracted from group_size
+  min_passengers?: number;
+  category?: string; // From categories array
+  difficulty?: TourDifficulty;
+  included?: string[]; // Maps to includes
+  not_included?: string[];
+  gallery_images?: string[];
+  requirements?: string[];
+  location?: TourLocation;
+  availability?: TourAvailability;
+  currency?: string;
 }
 
 export type TourDifficulty = 'easy' | 'moderate' | 'challenging' | 'expert';
@@ -110,6 +123,11 @@ export interface CreateTourRequest {
   requirements: string[];
   location: TourLocation;
   availability: TourAvailability;
+  featured_image?: string;
+  gallery_images?: string[];
+  status?: string;
+  seo_title?: string;
+  seo_description?: string;
 }
 
 export interface UpdateTourRequest extends Partial<CreateTourRequest> {
