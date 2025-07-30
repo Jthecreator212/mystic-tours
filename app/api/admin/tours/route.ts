@@ -3,42 +3,45 @@ import { createAppError, createErrorResponse, ERROR_CODES } from '@/lib/utils/er
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-// Driver validation schema
-const driverSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long'),
-  phone: z.string().min(10, 'Phone must be at least 10 characters'),
-  email: z.string().email('Invalid email address').optional(),
-  vehicle: z.string().min(1, 'Vehicle information is required'),
-  status: z.enum(['available', 'busy', 'offline']).default('available'),
+// Tour validation schema
+const tourSchema = z.object({
+  title: z.string().min(2, 'Title must be at least 2 characters').max(200, 'Title is too long'),
+  description: z.string().min(10, 'Description must be at least 10 characters'),
+  price: z.number().positive('Price must be positive'),
+  duration: z.string().min(1, 'Duration is required'),
+  max_people: z.number().min(1, 'Maximum people must be at least 1').max(50, 'Maximum people cannot exceed 50'),
+  location: z.string().min(2, 'Location must be at least 2 characters'),
+  image_url: z.string().url('Invalid image URL').optional(),
+  is_active: z.boolean().default(true),
 });
 
 export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
-      .from('drivers')
+      .from('tours')
       .select('*')
-      .order('name', { ascending: true });
+      .order('created_at', { ascending: false });
       
     if (error) {
-      console.error('Error fetching drivers:', error);
+      console.error('Error fetching tours:', error);
       const dbError = createAppError(
         ERROR_CODES.DB_QUERY,
-        'Failed to fetch drivers',
-        'Unable to retrieve driver data'
+        'Failed to fetch tours',
+        'Unable to retrieve tour data'
       );
       return NextResponse.json(
-        createErrorResponse('DB_QUERY', 'Failed to fetch drivers'),
+        createErrorResponse('DB_QUERY', 'Failed to fetch tours'),
         { status: 503 }
       );
     }
     
     return NextResponse.json({ 
       success: true,
-      drivers: data || [],
-      message: 'Drivers retrieved successfully'
+      tours: data || [],
+      message: 'Tours retrieved successfully'
     });
   } catch (error) {
-    console.error('Unexpected error fetching drivers:', error);
+    console.error('Unexpected error fetching tours:', error);
     return NextResponse.json(
       createErrorResponse('INTERNAL_ERROR', 'Unexpected error occurred'),
       { status: 500 }
@@ -65,82 +68,82 @@ export async function POST(req: Request) {
     }
     
     // Validate input data
-    const validationResult = driverSchema.safeParse(body);
+    const validationResult = tourSchema.safeParse(body);
     if (!validationResult.success) {
-      console.error('Driver validation failed:', validationResult.error.flatten().fieldErrors);
+      console.error('Tour validation failed:', validationResult.error.flatten().fieldErrors);
       const error = createAppError(
         ERROR_CODES.VALIDATION_FAILED,
-        'Invalid driver data',
+        'Invalid tour data',
         'Please check all required fields'
       );
       return NextResponse.json(
-        createErrorResponse('VALIDATION_FAILED', 'Invalid driver data', validationResult.error.flatten().fieldErrors),
+        createErrorResponse('VALIDATION_FAILED', 'Invalid tour data', validationResult.error.flatten().fieldErrors),
         { status: 400 }
       );
     }
     
     const validatedData = validationResult.data;
     
-    // Check if driver with same phone already exists
-    const { data: existingDriver, error: checkError } = await supabaseAdmin
-      .from('drivers')
+    // Check if tour with same title already exists
+    const { data: existingTour, error: checkError } = await supabaseAdmin
+      .from('tours')
       .select('id')
-      .eq('phone', validatedData.phone)
+      .eq('title', validatedData.title)
       .single();
       
     if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
-      console.error('Error checking existing driver:', checkError);
+      console.error('Error checking existing tour:', checkError);
       const dbError = createAppError(
         ERROR_CODES.DB_QUERY,
-        'Failed to check existing driver',
+        'Failed to check existing tour',
         'Database error occurred'
       );
       return NextResponse.json(
-        createErrorResponse('DB_QUERY', 'Failed to check existing driver'),
+        createErrorResponse('DB_QUERY', 'Failed to check existing tour'),
         { status: 503 }
       );
     }
     
-    if (existingDriver) {
+    if (existingTour) {
       const error = createAppError(
         ERROR_CODES.DB_CONSTRAINT,
-        'Driver with this phone number already exists',
-        'Please use a different phone number'
+        'Tour with this title already exists',
+        'Please use a different title'
       );
       return NextResponse.json(
-        createErrorResponse('DB_CONSTRAINT', 'Driver with this phone number already exists'),
+        createErrorResponse('DB_CONSTRAINT', 'Tour with this title already exists'),
         { status: 409 }
       );
     }
     
-    // Insert driver into database
-    const { data: driver, error: insertError } = await supabaseAdmin
-      .from('drivers')
+    // Insert tour into database
+    const { data: tour, error: insertError } = await supabaseAdmin
+      .from('tours')
       .insert([validatedData])
       .select()
       .single();
       
     if (insertError) {
-      console.error('Error inserting driver:', insertError);
+      console.error('Error inserting tour:', insertError);
       const error = createAppError(
         ERROR_CODES.DB_QUERY,
-        'Failed to create driver',
-        'Database error occurred while saving driver'
+        'Failed to create tour',
+        'Database error occurred while saving tour'
       );
       return NextResponse.json(
-        createErrorResponse('DB_QUERY', 'Failed to create driver'),
+        createErrorResponse('DB_QUERY', 'Failed to create tour'),
         { status: 503 }
       );
     }
     
     return NextResponse.json({ 
       success: true,
-      driver: driver,
-      message: 'Driver created successfully'
+      tour: tour,
+      message: 'Tour created successfully'
     });
     
   } catch (error) {
-    console.error('Unexpected error creating driver:', error);
+    console.error('Unexpected error creating tour:', error);
     return NextResponse.json(
       createErrorResponse('INTERNAL_ERROR', 'Unexpected error occurred'),
       { status: 500 }

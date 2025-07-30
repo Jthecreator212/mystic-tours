@@ -107,11 +107,7 @@ export function Newsletter() {
                 <button
                   type="submit"
                   disabled={isSubmitting || isRateLimited}
-                  className={`bg-[#1a5d1a] hover:bg-[#d83f31] text-[#f8ede3] font-bold py-3 px-6 rounded-md shadow-md transition-all duration-300 border-2 border-[#85603f] uppercase tracking-wider ${
-                    isSubmitting || isRateLimited
-                      ? 'opacity-50 cursor-not-allowed'
-                      : ''
-                  }`}
+                  className="bg-[#1a5d1a] hover:bg-[#d83f31] text-[#f8ede3] font-bold py-3 px-6 rounded-md shadow-md transition-all duration-300 border-2 border-[#85603f] uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? "Subscribing..." : isRateLimited ? "Please Wait" : "Subscribe"}
                 </button>

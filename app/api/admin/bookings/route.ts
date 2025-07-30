@@ -1,5 +1,20 @@
-import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+// Booking validation schema
+const bookingSchema = z.object({
+  tour_id: z.string().uuid('Invalid tour ID'),
+  customer_name: z.string().min(2, 'Name must be at least 2 characters'),
+  customer_email: z.string().email('Invalid email address'),
+  customer_phone: z.string().min(10, 'Phone must be at least 10 characters'),
+  booking_date: z.string().min(1, 'Booking date is required'),
+  number_of_people: z.number().min(1, 'At least 1 person required').max(20, 'Maximum 20 people'),
+  total_amount: z.number().positive('Total amount must be positive'),
+  status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']),
+  special_requests: z.string().optional(),
+});
 
 // --- Telegram Notification Logic ---
 async function sendTelegramNotification(data: {
@@ -14,15 +29,18 @@ async function sendTelegramNotification(data: {
   specialRequests?: string;
   isAdminBooking?: boolean;
 }) {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!botToken || !chatId) {
-    console.error('Telegram bot token or chat ID is not configured');
-    return { success: false, message: 'Telegram credentials not configured.' };
-  }
-  const message = formatTelegramMessage(data);
-  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
   try {
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+    
+    if (!botToken || !chatId) {
+      console.error('Telegram bot token or chat ID is not configured');
+      return { success: false, message: 'Telegram credentials not configured.' };
+    }
+    
+    const message = formatTelegramMessage(data);
+    const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+    
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -32,12 +50,17 @@ async function sendTelegramNotification(data: {
         parse_mode: 'Markdown',
       }),
     });
+    
     const result = await response.json();
     if (!result.ok) throw new Error(`Telegram API error: ${result.description}`);
+    
     return { success: true, message: 'Telegram notification sent successfully' };
   } catch (error) {
     console.error('Telegram notification error:', error);
-    return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : 'Unknown error' 
+    };
   }
 }
 
@@ -59,6 +82,7 @@ function formatTelegramMessage(data: {
   const formattedAmount = new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD'
   }).format(data.totalAmount);
+  
   let message = `🌴 *Mystic Tours - New Booking!* 🌴\n\n`;
   if (data.isAdminBooking) message += `📞 *ADMIN BOOKING* - Created by dispatch\n\n`;
   message += `A new booking has been requested. Please review the details below.\n\n`;
@@ -82,7 +106,6 @@ function formatTelegramMessage(data: {
   message += `🤖 _Mystic Booking Bot_`;
   return message;
 }
-// --- End Telegram Notification Logic ---
 
 export async function GET() {
   try {
@@ -93,65 +116,135 @@ export async function GET() {
       .range(0, 99);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('Error fetching bookings:', error);
+      return NextResponse.json(
+        { success: false, error: 'Failed to fetch bookings' },
+        { status: 503 }
+      );
     }
 
-    return NextResponse.json({ bookings: data || [] });
-  } catch {
-    return NextResponse.json({ error: 'Unexpected error.' }, { status: 500 });
-  }
+    return NextResponse.json({ 
+      success: true,
+      bookings: data || [],
+      message: 'Bookings retrieved successfully'
+    });
+            } catch {
+        return NextResponse.json(
+          { success: false, error: 'Unexpected error occurred' },
+          { status: 500 }
+        );
+      }
 }
 
 export async function POST(req: Request) {
-  console.log('[API] /api/admin/bookings POST called');
-  const body = await req.json();
-  console.log('[API] Received body:', JSON.stringify(body));
-  // Basic validation (required fields)
-  if (!body.tour_id || !body.customer_name || !body.customer_email || !body.booking_date || !body.number_of_people || !body.total_amount || !body.status) {
-    console.log('[API] Validation failed');
-    return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 });
-  }
-  // Remove id and special_requests from booking insert
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { id, special_requests, ...bookingData } = body;
-  const { data, error } = await supabaseAdmin.from('bookings').insert([bookingData]).select().single();
-  if (error) {
-    console.log('[API] DB insert error:', error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-  console.log('[API] Booking inserted:', JSON.stringify(data));
-  // If special_requests is present, insert into booking_special_requests
-  if (special_requests && data && data.id) {
-    await supabaseAdmin.from('booking_special_requests').upsert([
-      {
-        booking_id: data.id,
-        special_request: special_requests,
-        updated_at: new Date().toISOString(),
-      },
-    ]);
-    console.log('[API] Special requests upserted');
-  }
-  // Send Telegram notification
-  if (data && data.id) {
-    const { data: tour } = await supabaseAdmin
-      .from('tours')
-      .select('title')
-      .eq('id', body.tour_id)
+  try {
+    console.log('[API] /api/admin/bookings POST called');
+    
+    // Parse request body
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: 'Invalid request format' },
+        { status: 400 }
+      );
+    }
+    
+    console.log('[API] Received body:', JSON.stringify(body));
+    
+    // Validate input data
+    const validationResult = bookingSchema.safeParse(body);
+    if (!validationResult.success) {
+      console.log('[API] Validation failed:', JSON.stringify(validationResult.error.flatten().fieldErrors));
+      return NextResponse.json(
+        { success: false, error: 'Invalid booking data', details: validationResult.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+    
+    const validatedData = validationResult.data;
+    
+    // Extract special_requests from booking insert
+    const { special_requests, ...bookingData } = validatedData;
+    
+    // Insert booking into database
+    const { data: booking, error: bookingError } = await supabaseAdmin
+      .from('bookings')
+      .insert([bookingData])
+      .select()
       .single();
-    console.log('[API] Sending Telegram notification...');
-    await sendTelegramNotification({
-      bookingId: data.id,
-      tourName: tour?.title || 'Unknown Tour',
-      customerName: data.customer_name,
-      customerPhone: data.customer_phone || 'Not provided',
-      customerEmail: data.customer_email,
-      bookingDate: data.booking_date,
-      numberOfGuests: data.number_of_people,
-      totalAmount: data.total_amount,
-      specialRequests: special_requests,
-      isAdminBooking: true,
+      
+    if (bookingError) {
+      console.log('[API] DB insert error:', bookingError.message);
+      return NextResponse.json(
+        { success: false, error: 'Failed to create booking' },
+        { status: 503 }
+      );
+    }
+    
+    console.log('[API] Booking inserted:', JSON.stringify(booking));
+    
+    // Handle special requests if present
+    if (special_requests && booking && booking.id) {
+      const { error: specialRequestError } = await supabaseAdmin
+        .from('booking_special_requests')
+        .upsert([
+          {
+            booking_id: booking.id,
+            special_request: special_requests,
+            updated_at: new Date().toISOString(),
+          },
+        ]);
+        
+      if (specialRequestError) {
+        console.error('[API] Special requests upsert error:', specialRequestError);
+        // Don't fail the booking if special requests fail
+      } else {
+        console.log('[API] Special requests upserted');
+      }
+    }
+    
+    // Send Telegram notification
+    if (booking && booking.id) {
+      try {
+        const { data: tour } = await supabaseAdmin
+          .from('tours')
+          .select('title')
+          .eq('id', validatedData.tour_id)
+          .single();
+          
+        console.log('[API] Sending Telegram notification...');
+        await sendTelegramNotification({
+          bookingId: booking.id,
+          tourName: tour?.title || 'Unknown Tour',
+          customerName: booking.customer_name,
+          customerPhone: booking.customer_phone || 'Not provided',
+          customerEmail: booking.customer_email,
+          bookingDate: booking.booking_date,
+          numberOfGuests: booking.number_of_people,
+          totalAmount: booking.total_amount,
+          specialRequests: special_requests,
+          isAdminBooking: true,
+        });
+        console.log('[API] Telegram notification sent');
+      } catch (notificationError) {
+        console.error('[API] Telegram notification failed:', notificationError);
+        // Don't fail the booking if Telegram fails
+      }
+    }
+    
+    return NextResponse.json({ 
+      success: true,
+      booking: booking,
+      message: 'Booking created successfully'
     });
-    console.log('[API] Telegram notification sent');
+    
+  } catch (error) {
+    console.error('[API] Unexpected error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Unexpected error occurred' },
+      { status: 500 }
+    );
   }
-  return NextResponse.json({ booking: data });
 } 

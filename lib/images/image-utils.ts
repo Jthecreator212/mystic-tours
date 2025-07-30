@@ -1,13 +1,27 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Create Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseAdmin = createClient(
-  supabaseUrl || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
-const supabase = createClient(supabaseUrl || '', supabaseKey || '');
+// Environment variables with fallbacks for development
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bsxloajxptdsgqkxbiem.supabase.co'
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzeGxvYWp4cHRkc2dxa3hiaWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY5MzUyMzMsImV4cCI6MjA2MjUxMTIzM30.lhZoU7QeDRI4yBVvfOiRs1nBTe7BDkwDxchNWsA1kXk'
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzeGxvYWp4cHRkc2dxa3hiaWVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjkzNTIzMywiZXhwIjoyMDYyNTExMjMzfQ.q-T_wVjHm5MtkyvO93pdnuQiXkPIEpYsqeLcFI8sryA'
+
+// Validate required environment variables
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing required Supabase environment variables for image utilities')
+}
+
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true
+  }
+});
 
 // Storage bucket names
 export const BUCKETS = {
@@ -15,7 +29,7 @@ export const BUCKETS = {
   TOURS: 'tour-images',
   SITE: 'site-images',
   TEAM: 'team-images',
-};
+} as const;
 
 /**
  * Upload an image to Supabase Storage
@@ -26,100 +40,153 @@ export const BUCKETS = {
  */
 export async function uploadImage(
   file: File,
-  bucket: string = BUCKETS.GALLERY,
+  bucket: keyof typeof BUCKETS,
   customFileName?: string
-) {
-  // Create a unique filename if not provided
-  const fileExt = file.name.split('.').pop();
-  const fileName = customFileName || 
-    `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+): Promise<string> {
+  try {
+    const fileName = customFileName || `${Date.now()}-${file.name}`;
+    const filePath = `${bucket}/${fileName}`;
 
-  // Upload to Supabase Storage
-  const { error } = await supabaseAdmin.storage
-    .from(bucket)
-    .upload(fileName, file, {
-      upsert: true,
-      contentType: file.type,
-    });
+    const { data, error } = await supabase.storage
+      .from(BUCKETS[bucket])
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
 
-  if (error) {
-    throw error;
+    if (error) {
+      throw new Error(`Upload failed: ${error.message}`);
+    }
+
+    const { data: urlData } = supabase.storage
+      .from(BUCKETS[bucket])
+      .getPublicUrl(filePath);
+
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('Image upload error:', error);
+    throw new Error('Failed to upload image');
   }
-
-  // Get the public URL
-  const { data: urlData } = supabaseAdmin.storage
-    .from(bucket)
-    .getPublicUrl(fileName);
-
-  return urlData.publicUrl;
 }
 
 /**
  * Delete an image from Supabase Storage
- * @param url The full URL of the image to delete
- * @param bucket The storage bucket the image is in
+ * @param filePath The path to the file to delete
+ * @param bucket The storage bucket
  */
-export async function deleteImage(url: string, bucket: string = BUCKETS.GALLERY) {
-  // Extract the filename from the URL
-  const urlParts = url.split('/');
-  const fileName = urlParts[urlParts.length - 1];
-
-  // Delete the file from storage
-  const { error } = await supabaseAdmin.storage.from(bucket).remove([fileName]);
-
-  if (error) {
-    throw error;
-  }
-
-  return true;
-}
-
-/**
- * Get a public URL for an image in Supabase Storage
- * @param fileName The name of the file
- * @param bucket The storage bucket the image is in
- * @returns The public URL of the image
- */
-export function getImageUrl(fileName: string, bucket: string = BUCKETS.GALLERY) {
-  const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
-  return data.publicUrl;
-}
-
-/**
- * Create a storage bucket if it doesn't exist
- * @param bucketName The name of the bucket to create
- * @param isPublic Whether the bucket should be public
- */
-export async function createBucketIfNotExists(
-  bucketName: string,
-  isPublic: boolean = true
-) {
+export async function deleteImage(
+  filePath: string,
+  bucket: keyof typeof BUCKETS
+): Promise<void> {
   try {
-    // Check if the bucket exists
-    const { data: buckets } = await supabaseAdmin.storage.listBuckets();
-    const bucketExists = buckets?.some((bucket) => bucket.name === bucketName) || false;
+    const { error } = await supabase.storage
+      .from(BUCKETS[bucket])
+      .remove([filePath]);
 
-    if (!bucketExists) {
-      // Create the bucket
-      await supabaseAdmin.storage.createBucket(bucketName, {
-        public: isPublic,
-      });
+    if (error) {
+      throw new Error(`Delete failed: ${error.message}`);
     }
-    return true;
   } catch (error) {
-    console.error(`Error creating bucket ${bucketName}:`, error);
-    return false;
+    console.error('Image deletion error:', error);
+    throw new Error('Failed to delete image');
   }
 }
 
 /**
- * Ensure all required buckets exist
+ * Get a list of images from a bucket
+ * @param bucket The storage bucket
+ * @param folder Optional folder path
+ * @returns Array of image URLs
  */
-export async function ensureAllBucketsExist() {
-  await Promise.all([
-    createBucketIfNotExists(BUCKETS.GALLERY),
-    createBucketIfNotExists(BUCKETS.TOURS),
-    createBucketIfNotExists(BUCKETS.SITE),
-    createBucketIfNotExists(BUCKETS.TEAM),
-  ]);
+export async function listImages(
+  bucket: keyof typeof BUCKETS,
+  folder?: string
+): Promise<string[]> {
+  try {
+    const { data, error } = await supabase.storage
+      .from(BUCKETS[bucket])
+      .list(folder || '', {
+        limit: 100,
+        offset: 0
+      });
+
+    if (error) {
+      throw new Error(`List failed: ${error.message}`);
+    }
+
+    return data
+      .filter(item => !item.name.endsWith('/'))
+      .map(item => {
+        const { data: urlData } = supabase.storage
+          .from(BUCKETS[bucket])
+          .getPublicUrl(folder ? `${folder}/${item.name}` : item.name);
+        return urlData.publicUrl;
+      });
+  } catch (error) {
+    console.error('Image listing error:', error);
+    throw new Error('Failed to list images');
+  }
+}
+
+/**
+ * Validate image file
+ * @param file The file to validate
+ * @param maxSizeMB Maximum file size in MB
+ * @returns Validation result
+ */
+export function validateImageFile(
+  file: File,
+  maxSizeMB: number = 5
+): { valid: boolean; error?: string } {
+  // Check file type
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+  if (!allowedTypes.includes(file.type)) {
+    return {
+      valid: false,
+      error: 'Please upload a valid image file (JPEG, PNG, WebP, or GIF)'
+    };
+  }
+
+  // Check file size
+  const maxSizeBytes = maxSizeMB * 1024 * 1024;
+  if (file.size > maxSizeBytes) {
+    return {
+      valid: false,
+      error: `File size must be less than ${maxSizeMB}MB`
+    };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Generate optimized image URL
+ * @param originalUrl The original image URL
+ * @param width Optional width for resizing
+ * @param height Optional height for resizing
+ * @param quality Optional quality (1-100)
+ * @returns Optimized image URL
+ */
+export function getOptimizedImageUrl(
+  originalUrl: string,
+  width?: number,
+  height?: number,
+  quality: number = 80
+): string {
+  if (!originalUrl.includes('supabase.co')) {
+    return originalUrl;
+  }
+
+  const url = new URL(originalUrl);
+  const params = new URLSearchParams();
+
+  if (width) params.append('width', width.toString());
+  if (height) params.append('height', height.toString());
+  if (quality) params.append('quality', quality.toString());
+
+  if (params.toString()) {
+    url.search = params.toString();
+  }
+
+  return url.toString();
 }

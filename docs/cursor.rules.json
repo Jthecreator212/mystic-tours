@@ -1,216 +1,156 @@
 {
   "rules": [
     {
-      "watch": [
-        "scripts/*.sql",
-        "supabase/migrations/*.sql"
+      "name": "Bug Documentation Master",
+      "description": "Document every bug, fix, and lesson learned with structured reporting",
+      "priority": "high",
+      "triggers": ["bug_fix", "error_resolution", "issue_solution"],
+      "actions": [
+        "create_bug_report",
+        "document_solution",
+        "generate_prevention_rules",
+        "update_knowledge_base"
+      ]
+    },
+    {
+      "name": "Repeated Issue Memory Creator",
+      "description": "Automatically create memories when the same issue needs to be fixed more than once",
+      "priority": "critical",
+      "triggers": ["repeated_error", "same_issue_fix", "multiple_occurrences"],
+      "conditions": {
+        "threshold": 2,
+        "time_window": "30_days",
+        "issue_types": [
+          "build_errors",
+          "linter_errors", 
+          "runtime_errors",
+          "database_errors",
+          "api_errors",
+          "permission_errors",
+          "import_errors",
+          "type_errors",
+          "validation_errors"
+        ]
+      },
+      "actions": [
+        "detect_repeated_issue",
+        "create_memory_entry",
+        "generate_prevention_strategy",
+        "update_error_handling",
+        "document_pattern"
       ],
-      "update": [
-        "docs/DATABASE_SCHEMA.md"
-      ],
-      "description": "Whenever you make changes to migration or schema files, update the database documentation to reflect the current structure."
-    },
-    {
-      "watch": [
-        "components/**/*.tsx",
-        "app/**/*.tsx"
-      ],
-      "update": [
-        "docs/COMPONENT_ORGANIZATION.md"
-      ],
-      "description": "When adding new components, ensure they follow the established organization pattern and update documentation."
-    },
-    {
-      "name": "Component Organization",
-      "description": "Maintain organized component structure with clear separation of concerns",
-      "rules": [
-        "Components must be organized by feature/domain: forms/, dialogs/, admin/, layout/, features/",
-        "Large components (>300 lines) should be broken down into smaller, focused components",
-        "Each component directory should have an index.ts file for clean imports",
-        "UI components stay in components/ui/ for reusability",
-        "Feature-specific components go in components/features/",
-        "Form components go in components/forms/",
-        "Dialog/modal components go in components/dialogs/",
-        "Admin-specific components go in components/admin/",
-        "Layout components (navbar, footer, etc.) go in components/layout/"
+      "memory_structure": {
+        "issue_id": "unique_identifier",
+        "issue_type": "error_category",
+        "first_occurrence": "timestamp",
+        "occurrence_count": "number",
+        "error_message": "exact_error_text",
+        "file_path": "affected_file",
+        "line_number": "error_line",
+        "root_cause": "analysis",
+        "solution_applied": "fix_description",
+        "prevention_measures": ["list_of_actions"],
+        "related_files": ["affected_files"],
+        "environment_context": "os_version_etc",
+        "severity": "critical|high|medium|low",
+        "time_to_resolve": "duration",
+        "user_impact": "description"
+      },
+      "prevention_strategies": [
+        "add_validation_checks",
+        "improve_error_handling",
+        "add_type_safety",
+        "create_automated_tests",
+        "update_documentation",
+        "add_monitoring",
+        "implement_guard_clauses"
       ]
     },
     {
-      "name": "File Organization",
-      "description": "Maintain organized file structure with clear separation of concerns",
-      "rules": [
-        "Lib utilities must be organized by concern: supabase/, utils/, schemas/, api/, images/",
-        "E2E tests must be organized by feature: admin/, forms/, pages/",
-        "Each lib directory should have an index.ts file for clean imports",
-        "Database-related utilities go in lib/supabase/",
-        "Form validation schemas go in lib/schemas/",
-        "API utilities go in lib/api/",
-        "Image handling utilities go in lib/images/",
-        "General utilities go in lib/utils/"
+      "name": "Error Pattern Recognition",
+      "description": "Identify patterns in errors and create targeted prevention rules",
+      "priority": "high",
+      "triggers": ["pattern_detected", "similar_errors"],
+      "actions": [
+        "analyze_error_patterns",
+        "categorize_issues",
+        "create_pattern_memory",
+        "generate_prevention_rule",
+        "update_development_workflow"
       ]
     },
     {
-      "name": "Import Organization",
-      "description": "Maintain clean and consistent import patterns",
-      "rules": [
-        "Use index.ts files for clean imports from organized directories",
-        "Prefer relative imports for closely related files",
-        "Use absolute imports (@/) for cross-module dependencies",
-        "Group imports: React/Next.js, third-party, internal, relative",
-        "Update all import statements when moving files to new locations"
-      ]
-    },
-    {
-      "name": "Code Quality",
-      "description": "Maintain high code quality standards",
-      "rules": [
-        "Components should be single-responsibility and under 300 lines",
-        "Use TypeScript interfaces for all props and data structures",
-        "Add JSDoc comments for complex functions and components",
-        "Follow consistent naming conventions (PascalCase for components, camelCase for functions)",
-        "Use proper error handling and loading states",
-        "Implement proper accessibility attributes (aria-labels, roles, etc.)"
-      ]
-    },
-    {
-      "name": "Performance Optimization",
-      "description": "Maintain fast loading times and optimal performance",
-      "rules": [
-        "Always use Next.js Image component for images with proper sizing",
-        "Implement loading states for all async operations",
-        "Use React.memo() for expensive components that re-render frequently",
-        "Lazy load non-critical components and routes",
-        "Optimize database queries with proper indexing hints",
-        "Use SWR or React Query for data fetching with caching",
-        "Implement proper error boundaries for graceful failure handling",
-        "Monitor bundle size and split large components when >50KB"
-      ]
-    },
-    {
-      "name": "Security Best Practices",
-      "description": "Maintain production-grade security standards",
-      "rules": [
-        "All API routes must validate input with Zod schemas",
-        "Never expose sensitive data in client-side code",
-        "Use Row Level Security (RLS) for all database operations",
-        "Implement proper authentication checks in admin routes",
-        "Sanitize all user inputs before database operations",
-        "Use environment variables for all configuration",
-        "Implement rate limiting for form submissions",
-        "Add CSRF protection to all state-changing operations"
-      ]
-    },
-    {
-      "name": "Mobile-First Responsive Design",
-      "description": "Ensure perfect experience across all devices",
-      "rules": [
-        "Start with mobile design, then enhance for desktop",
-        "Use Tailwind's responsive prefixes (sm:, md:, lg:, xl:)",
-        "Test all interactive elements for touch accessibility",
-        "Ensure minimum 44px touch targets for mobile",
-        "Use proper viewport meta tags and responsive images",
-        "Implement proper keyboard navigation for accessibility",
-        "Test forms on mobile devices for usability",
-        "Use CSS Grid and Flexbox for responsive layouts"
-      ]
-    },
-    {
-      "name": "Comprehensive Testing Strategy",
-      "description": "Maintain high test coverage and reliability",
-      "rules": [
-        "Write Playwright tests for all user journeys",
-        "Create unit tests for utility functions and hooks",
-        "Test all form validations and error states",
-        "Mock external services (Telegram, payment APIs)",
-        "Test admin flows with different user permissions",
-        "Implement visual regression testing for UI changes",
-        "Test database operations with proper cleanup",
-        "Add integration tests for booking workflows"
-      ]
-    },
-    {
-      "name": "Business Logic Integrity",
-      "description": "Ensure booking and payment logic is bulletproof",
-      "rules": [
-        "Validate booking dates against tour availability",
-        "Implement proper pricing calculations with taxes/fees",
-        "Handle concurrent bookings to prevent double-booking",
-        "Add booking confirmation workflows with email/SMS",
-        "Implement proper refund and cancellation policies",
-        "Track booking status changes with audit logs",
-        "Validate driver assignments against availability",
-        "Implement proper notification systems for all events"
-      ]
-    },
-    {
-      "name": "Design System Consistency",
-      "description": "Maintain professional and consistent user experience",
-      "rules": [
-        "Use consistent spacing scale (4px, 8px, 16px, 24px, 32px)",
-        "Maintain consistent color palette across all components",
-        "Use proper typography hierarchy (h1-h6, body, caption)",
-        "Implement consistent loading and error states",
-        "Use proper focus states and hover effects",
-        "Maintain consistent button styles and interactions",
-        "Use consistent form field styling and validation",
-        "Implement proper dark mode support if needed"
-      ]
-    },
-    {
-      "name": "Robust Data Handling",
-      "description": "Ensure reliable data operations and state management",
-      "rules": [
-        "Use optimistic updates for better UX",
-        "Implement proper error recovery for failed operations",
-        "Add data validation at both client and server levels",
-        "Use proper TypeScript types for all data structures",
-        "Implement proper caching strategies for frequently accessed data",
-        "Add data migration scripts for schema changes",
-        "Use transactions for multi-step operations",
-        "Implement proper data backup and recovery procedures"
-      ]
-    },
-    {
-      "name": "Production Readiness",
-      "description": "Ensure smooth deployment and monitoring",
-      "rules": [
-        "Add proper error logging and monitoring",
-        "Implement health checks for all critical services",
-        "Use environment-specific configurations",
-        "Add performance monitoring and analytics",
-        "Implement proper CI/CD pipeline with testing",
-        "Add database migration scripts for production",
-        "Use proper logging levels (debug, info, warn, error)",
-        "Implement proper backup strategies for production data"
-      ]
-    },
-    {
-      "name": "SEO and Accessibility Excellence",
-      "description": "Ensure discoverability and accessibility compliance",
-      "rules": [
-        "Add proper meta tags for all pages",
-        "Implement structured data (JSON-LD) for tours",
-        "Use semantic HTML elements (main, section, article)",
-        "Add proper alt text for all images",
-        "Implement proper heading hierarchy (h1-h6)",
-        "Add ARIA labels for interactive elements",
-        "Ensure keyboard navigation works for all features",
-        "Add proper sitemap and robots.txt files"
-      ]
-    },
-    {
-      "name": "Future-Proof Architecture",
-      "description": "Build for scale and easy maintenance",
-      "rules": [
-        "Use dependency injection for external services",
-        "Implement proper abstraction layers for APIs",
-        "Use feature flags for gradual rollouts",
-        "Add comprehensive logging for debugging",
-        "Implement proper code splitting and lazy loading",
-        "Use proper state management patterns",
-        "Add comprehensive documentation for all features",
-        "Implement proper versioning for API changes"
+      "name": "Memory Consolidation",
+      "description": "Regularly review and consolidate related memories into actionable knowledge",
+      "priority": "medium",
+      "triggers": ["memory_review", "knowledge_consolidation"],
+      "frequency": "weekly",
+      "actions": [
+        "review_recent_memories",
+        "identify_patterns",
+        "consolidate_related_issues",
+        "create_best_practices",
+        "update_development_guidelines"
       ]
     }
-  ]
+  ],
+  "memory_templates": {
+    "repeated_build_error": {
+      "title": "Repeated Build Error: {error_type}",
+      "content": "This error has occurred {count} times in {timeframe}. Root cause: {root_cause}. Solution: {solution}. Prevention: {prevention_measures}",
+      "tags": ["build_error", "repeated_issue", "prevention_needed"]
+    },
+    "repeated_linter_error": {
+      "title": "Repeated Linter Error: {error_type}",
+      "content": "Linter error '{error_message}' has occurred {count} times. File: {file_path}. Fix: {solution}. Prevention: {prevention_measures}",
+      "tags": ["linter_error", "code_quality", "repeated_issue"]
+    },
+    "repeated_runtime_error": {
+      "title": "Repeated Runtime Error: {error_type}",
+      "content": "Runtime error '{error_message}' has occurred {count} times. Context: {context}. Solution: {solution}. Prevention: {prevention_measures}",
+      "tags": ["runtime_error", "production_issue", "repeated_issue"]
+    },
+    "repeated_database_error": {
+      "title": "Repeated Database Error: {error_type}",
+      "content": "Database error '{error_message}' has occurred {count} times. Table: {table}. Solution: {solution}. Prevention: {prevention_measures}",
+      "tags": ["database_error", "data_integrity", "repeated_issue"]
+    },
+    "repeated_api_error": {
+      "title": "Repeated API Error: {error_type}",
+      "content": "API error '{error_message}' has occurred {count} times. Endpoint: {endpoint}. Solution: {solution}. Prevention: {prevention_measures}",
+      "tags": ["api_error", "integration_issue", "repeated_issue"]
+    }
+  },
+  "prevention_rules": {
+    "build_errors": [
+      "Always run 'pnpm lint' before committing",
+      "Use TypeScript strict mode",
+      "Add proper error boundaries",
+      "Validate environment variables"
+    ],
+    "linter_errors": [
+      "Use ESLint auto-fix before committing",
+      "Add proper TypeScript types",
+      "Follow consistent naming conventions",
+      "Use proper import statements"
+    ],
+    "runtime_errors": [
+      "Add comprehensive error handling",
+      "Use try-catch blocks",
+      "Validate user inputs",
+      "Add proper fallbacks"
+    ],
+    "database_errors": [
+      "Add database connection pooling",
+      "Use proper transaction handling",
+      "Validate data before insertion",
+      "Add database constraints"
+    ],
+    "api_errors": [
+      "Add proper HTTP status codes",
+      "Use consistent error response format",
+      "Add input validation",
+      "Implement rate limiting"
+    ]
+  }
 } 

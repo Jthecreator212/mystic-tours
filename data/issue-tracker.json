@@ -1,0 +1,68 @@
+{
+  "84505bb4": {
+    "id": "84505bb4",
+    "issue_type": "unknown_error",
+    "error_message": "EPERM: operation not permitted, open 'C:\\Projects\\mystic-tours\\.next\\trace'",
+    "file_path": "next.config.mjs",
+    "line_number": null,
+    "first_occurrence": "2025-07-29T21:34:04.251Z",
+    "occurrence_count": 2,
+    "last_occurrence": "2025-07-29T21:34:49.675Z",
+    "solution_applied": "Multiple Node processes competing for file system access",
+    "prevention_measures": [
+      "Add proper error handling",
+      "Document the issue",
+      "Create automated tests"
+    ],
+    "severity": "low",
+    "environment_context": "win32 v22.11.0",
+    "related_files": [
+      "next.config.mjs"
+    ]
+  },
+  "115b1c9a": {
+    "id": "115b1c9a",
+    "issue_type": "linter_errors",
+    "error_message": "ESLint errors: unused variables in API routes",
+    "file_path": "app/api/admin/bookings/route.ts",
+    "line_number": null,
+    "first_occurrence": "2025-07-29T21:39:11.370Z",
+    "occurrence_count": 1,
+    "last_occurrence": "2025-07-29T21:39:11.370Z",
+    "solution_applied": "Unused variables from error handling refactoring",
+    "prevention_measures": [
+      "Use ESLint auto-fix before committing",
+      "Add proper TypeScript types",
+      "Follow consistent naming conventions",
+      "Use proper import statements"
+    ],
+    "severity": "medium",
+    "environment_context": "win32 v22.11.0",
+    "related_files": [
+      "app/api/admin/bookings/route.ts"
+    ]
+  },
+  "0b0be9d1": {
+    "id": "0b0be9d1",
+    "issue_type": "type_errors",
+    "error_message": "TypeScript type error: ErrorResponse not assignable to Response",
+    "file_path": "app/api/analytics/event/route.ts",
+    "line_number": 64,
+    "first_occurrence": "2025-07-29T21:44:52.220Z",
+    "occurrence_count": 1,
+    "last_occurrence": "2025-07-29T21:44:52.220Z",
+    "root_cause": "ErrorResponse type mismatch",
+    "solution_applied": "Fix return type",
+    "prevention_measures": [
+      "Add proper TypeScript types",
+      "Use strict TypeScript configuration",
+      "Add type guards where needed",
+      "Use proper interface definitions"
+    ],
+    "severity": "medium",
+    "environment_context": "win32 v22.11.0",
+    "related_files": [
+      "app/api/analytics/event/route.ts"
+    ]
+  }
+}

@@ -1,23 +1,23 @@
 'use client';
 
-import { AlertCircle, Key, Lock, User } from 'lucide-react';
-import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Lock, Mail, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 export default function AdminAuth() {
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    accessKey: ''
+    password: ''
   });
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsLoading(true);
     setError('');
 
     try {
@@ -26,154 +26,88 @@ export default function AdminAuth() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData)
       });
 
-      const result = await response.json();
+      const data = await response.json();
 
-      if (response.ok && result.success) {
+      if (data.success) {
         router.push('/mt-operations');
-        router.refresh();
       } else {
-        setError(result.error || 'Authentication failed');
+        setError(data.error || 'Authentication failed');
       }
     } catch {
-      setError('Network error. Please try again.');
+      setError('Authentication failed');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
-
   return (
-    <div className="min-h-screen bg-[#f8ede3] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <div className="bg-[#1a5d1a] rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-4">
-            <Lock className="w-10 h-10 text-[#e9b824]" />
+    <div className="min-h-screen bg-gradient-to-br from-[#f8ede3] to-[#e9b824] flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-2xl border-2 border-[#85603f]">
+        <CardHeader className="text-center bg-[#1a5d1a] text-[#f8ede3] rounded-t-lg">
+          <div className="flex justify-center mb-4">
+            <Shield className="h-16 w-16 text-[#e9b824]" />
           </div>
-          <h1 className="text-3xl font-bold font-playfair text-[#1a5d1a] mb-2">
-            Mystic Tours Operations
-          </h1>
-          <p className="text-[#85603f]">Admin Access Portal</p>
-        </div>
-
-        {/* Login Form */}
-        <div className="bg-[#f8ede3] border-2 border-[#e9b824] rounded-lg p-6 shadow-lg">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-[#85603f] mb-2">
-                Admin Email
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#85603f]" />
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-[#e9b824] rounded-lg bg-white text-[#85603f] placeholder-[#85603f]/60 focus:outline-none focus:ring-2 focus:ring-[#1a5d1a] focus:border-transparent"
-                  placeholder="Enter admin email"
-                  disabled={loading}
-                />
-              </div>
+          <CardTitle className="text-2xl font-bold">MT Operations</CardTitle>
+          <CardDescription className="text-[#f8ede3]/80">
+            Secure Admin Access Portal
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent className="p-8">
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#85603f]" />
+              <input
+                id="email"
+                type="email"
+                required
+                autoComplete="username"
+                className="w-full pl-10 pr-4 py-3 border border-[#e9b824] rounded-lg bg-white text-[#85603f] placeholder-[#85603f]/60 focus:outline-none focus:ring-2 focus:ring-[#1a5d1a] focus:border-transparent"
+                placeholder="Admin Email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              />
             </div>
 
-            {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-[#85603f] mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#85603f]" />
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-[#e9b824] rounded-lg bg-white text-[#85603f] placeholder-[#85603f]/60 focus:outline-none focus:ring-2 focus:ring-[#1a5d1a] focus:border-transparent"
-                  placeholder="Enter password"
-                  disabled={loading}
-                />
-              </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#85603f]" />
+              <input
+                id="password"
+                type="password"
+                required
+                autoComplete="current-password"
+                className="w-full pl-10 pr-4 py-3 border border-[#e9b824] rounded-lg bg-white text-[#85603f] placeholder-[#85603f]/60 focus:outline-none focus:ring-2 focus:ring-[#1a5d1a] focus:border-transparent"
+                placeholder="Enter password"
+                value={formData.password}
+                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+              />
             </div>
 
-            {/* Access Key Field */}
-            <div>
-              <label htmlFor="accessKey" className="block text-sm font-medium text-[#85603f] mb-2">
-                Access Key
-              </label>
-              <div className="relative">
-                <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#85603f]" />
-                <input
-                  type="password"
-                  id="accessKey"
-                  name="accessKey"
-                  required
-                  value={formData.accessKey}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-[#e9b824] rounded-lg bg-white text-[#85603f] placeholder-[#85603f]/60 focus:outline-none focus:ring-2 focus:ring-[#1a5d1a] focus:border-transparent"
-                  placeholder="Enter access key"
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center space-x-2">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-                <span className="text-red-700 text-sm">{error}</span>
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className="w-full bg-[#1a5d1a] text-[#e9b824] py-3 px-4 rounded-lg font-bold text-lg hover:bg-[#388e3c] focus:outline-none focus:ring-2 focus:ring-[#1a5d1a] focus:ring-offset-2 focus:ring-offset-[#f8ede3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoading}
+              className="w-full bg-[#1a5d1a] hover:bg-[#d83f31] text-[#f8ede3] font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-300 border-2 border-[#85603f] uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-5 h-5 border-2 border-[#e9b824] border-t-transparent rounded-full animate-spin"></div>
-                  <span>Authenticating...</span>
-                </div>
-              ) : (
-                'Access Operations Panel'
-              )}
-            </button>
+              {isLoading ? 'Authenticating...' : 'Access Portal'}
+            </Button>
           </form>
 
-          {/* Footer */}
           <div className="mt-6 text-center">
             <p className="text-xs text-[#85603f]/70">
-              Authorized personnel only. All access is logged and monitored.
+              Authorized Personnel Only
             </p>
           </div>
-        </div>
-
-        {/* Back to Public Site */}
-        <div className="text-center mt-6">
-          <Link
-            href="/"
-            className="text-[#85603f] hover:text-[#1a5d1a] text-sm font-medium transition-colors"
-          >
-            ← Back to Mystic Tours
-          </Link>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 } 

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "memory_84505bb4",
+    "title": "Repeated unknown error: EPERM: operation not permitted, open 'C:\\Projects\\...",
+    "content": "**Repeated Issue Detected**\n\n**Error Type:** unknown error\n**Occurrences:** 2 times in 1 day\n**File:** next.config.mjs\n**Error Message:** EPERM: operation not permitted, open 'C:\\Projects\\mystic-tours\\.next\\trace'\n\n**Root Cause:** Not analyzed yet\n**Solution Applied:** Multiple Node processes competing for file system access\n**Severity:** LOW\n\n**Prevention Measures:**\n- Add proper error handling\n- Document the issue\n- Create automated tests\n\n**Environment:** win32 v22.11.0\n**Related Files:** next.config.mjs\n\n**Action Required:** Implement prevention measures to avoid future occurrences.",
+    "tags": [
+      "unknown_error",
+      "repeated_issue",
+      "prevention_needed"
+    ],
+    "created_at": "2025-07-29T21:34:49.686Z",
+    "issue_type": "unknown_error",
+    "occurrence_count": 2,
+    "prevention_strategy": [
+      "Add proper error handling",
+      "Document the issue",
+      "Create automated tests"
+    ]
+  }
+]
