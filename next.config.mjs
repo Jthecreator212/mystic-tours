@@ -39,6 +39,7 @@ const nextConfig = {
         imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   webpack: (config, { isServer, dev }) => {
+    // Client-side fallbacks
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -48,14 +49,30 @@ const nextConfig = {
       }
     }
 
-    // Fix for 'self is not defined' error and other browser APIs
+    // Server-side fallbacks and global scope fixes
     if (isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
         self: false,
         window: false,
         global: false,
       }
+      
+      // Add webpack plugin to handle global scope issues
+      const webpack = require('webpack');
+      config.plugins.push(
+        new webpack.DefinePlugin({
+          'typeof self': '"undefined"',
+          'typeof window': '"undefined"',
+          'typeof global': '"undefined"',
+          'self': 'undefined',
+          'window': 'undefined',
+          'global': 'undefined',
+        })
+      );
     }
 
     // Bundle analyzer
