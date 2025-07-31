@@ -12,8 +12,6 @@ const nextConfig = {
     },
     optimizeCss: true,
     optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react'],
-    // Disable some optimizations that might cause issues
-    serverExternalPackages: [],
   },
   images: {
     remotePatterns: [
