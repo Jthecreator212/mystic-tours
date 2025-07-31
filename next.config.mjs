@@ -38,7 +38,7 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
         imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
-  webpack: (config, { isServer, dev }) => {
+  webpack: async (config, { isServer, dev }) => {
     // Client-side fallbacks
     if (!isServer) {
       config.resolve.fallback = {
@@ -62,9 +62,9 @@ const nextConfig = {
       }
       
       // Add webpack plugin to handle global scope issues
-      const webpack = require('webpack');
+      const webpack = await import('webpack');
       config.plugins.push(
-        new webpack.DefinePlugin({
+        new webpack.default.DefinePlugin({
           'typeof self': '"undefined"',
           'typeof window': '"undefined"',
           'typeof global': '"undefined"',
@@ -77,7 +77,7 @@ const nextConfig = {
 
     // Bundle analyzer
     if (process.env.ANALYZE === 'true') {
-      const { BundleAnalyzerPlugin } = require('@next/bundle-analyzer');
+      const { BundleAnalyzerPlugin } = await import('@next/bundle-analyzer');
       config.plugins.push(
         new BundleAnalyzerPlugin({
           analyzerMode: 'static',
