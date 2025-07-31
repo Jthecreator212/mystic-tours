@@ -11,7 +11,7 @@ interface TourListProps {
   onAddNew: () => void;
 }
 
-export default function TourList({ onEdit, onDelete, onView, onAddNew }: TourListProps) {
+export default function TourList({ onEdit, onView, onAddNew }: TourListProps) {
   const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,14 +31,36 @@ export default function TourList({ onEdit, onDelete, onView, onAddNew }: TourLis
       } else {
         setError(data.error || 'Failed to fetch tours');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to fetch tours');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (tourId: string) => { alert('Delete functionality temporarily disabled'); };
+  const handleDelete = async (tourId: string) => {
+    if (!confirm('Are you sure you want to delete this tour? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/tours/${tourId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Remove the tour from the local state
+        setTours(tours.filter(tour => tour.id !== tourId));
+        alert('Tour deleted successfully!');
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to delete tour: ${errorData.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error deleting tour:', error);
+      alert('Failed to delete tour. Please try again.');
+    }
+  };
 
   if (loading) {
     return (

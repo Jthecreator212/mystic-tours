@@ -51,7 +51,7 @@ export default function AdminToursPage() {
         const error = await response.json();
         alert(error.error || 'Failed to save tour');
       }
-    } catch (err) {
+    } catch {
       alert('Failed to save tour');
     }
   };
@@ -74,7 +74,7 @@ export default function AdminToursPage() {
       
       <TourList
         onEdit={handleEdit}
-        onDelete={(tourId) => {
+        onDelete={(_tourId) => {
           // Delete functionality is handled in the TourList component
         }}
         onView={handleView}

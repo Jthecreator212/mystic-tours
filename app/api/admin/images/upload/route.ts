@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     const fileName = `tour-images/${timestamp}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
 
     // Upload to Supabase Storage
-    const { data, error } = await supabaseAdmin.storage
+    const { error } = await supabaseAdmin.storage
       .from('tour-images')
       .upload(fileName, file, {
         cacheControl: '3600',

@@ -120,7 +120,7 @@ export default function TourView({ tour, onClose, onEdit }: TourViewProps) {
             {/* What's Included */}
             {tour.included && tour.included.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold text-[#388e3c] mb-2">What's Included</h3>
+                <h3 className="text-lg font-semibold text-[#388e3c] mb-2">What&apos;s Included</h3>
                 <ul className="space-y-1">
                   {tour.included.map((item, index) => (
                     <li key={index} className="flex items-start gap-2">
@@ -135,7 +135,7 @@ export default function TourView({ tour, onClose, onEdit }: TourViewProps) {
             {/* What's Not Included */}
             {tour.not_included && tour.not_included.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold text-[#388e3c] mb-2">What's Not Included</h3>
+                <h3 className="text-lg font-semibold text-[#388e3c] mb-2">What&apos;s Not Included</h3>
                 <ul className="space-y-1">
                   {tour.not_included.map((item, index) => (
                     <li key={index} className="flex items-start gap-2">

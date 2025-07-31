@@ -1,66 +1,100 @@
-import { supabaseAdmin } from '@/lib/supabase/supabase';
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
+import { apiHandler } from '@/lib/api/response-handlers';
+import { DatabaseOperations } from '@/lib/database/operations';
+import { schemas } from '@/lib/schemas/api-schemas';
+import { NextRequest } from 'next/server';
 
-const tourSchema = z.object({
-  name: z.string().min(1, 'Tour name is required'),
-  slug: z.string().min(1, 'Slug is required'),
-  short_description: z.string().min(1, 'Short description is required'),
-  description: z.string().min(1, 'Description is required'),
-  price: z.number().min(0, 'Price must be positive'),
-  duration: z.string().min(1, 'Duration is required'),
-  max_passengers: z.number().min(1, 'Max passengers must be at least 1'),
-  min_passengers: z.number().min(1, 'Min passengers must be at least 1'),
-  category: z.string().optional(),
-  difficulty: z.enum(['easy', 'moderate', 'challenging', 'expert']).default('easy'),
-  featured_image: z.string().optional(),
-  gallery_images: z.array(z.string()).optional(),
-  highlights: z.array(z.string()).optional(),
-  included: z.array(z.string()).optional(),
-  not_included: z.array(z.string()).optional(),
-  requirements: z.array(z.string()).optional(),
-  status: z.enum(['draft', 'published', 'archived']).default('draft'),
-  seo_title: z.string().optional(),
-  seo_description: z.string().optional(),
-  currency: z.string().default('USD'),
-  location: z.object({
-    city: z.string(),
-    country: z.string(),
-    coordinates: z.object({
-      lat: z.number(),
-      lng: z.number()
-    })
-  }).optional(),
-  availability: z.object({
-    available: z.boolean(),
-    max_bookings: z.number()
-  }).optional(),
+// Data transformation utilities
+const transformTourForDatabase = (tourData: Record<string, unknown>) => ({
+  title: tourData.name,
+  slug: tourData.slug,
+  short_description: tourData.short_description,
+  description: tourData.description,
+  price: tourData.price,
+  duration: tourData.duration,
+  group_size: `${tourData.max_passengers} people`,
+  includes: tourData.included || [],
+  departure: 'Hotel pickup',
+  languages: ['English'],
+  image_url: tourData.featured_image || '',
+  highlights: tourData.highlights || [],
+  itinerary: [],
+  categories: tourData.category ? [tourData.category] : [],
+  tags: [],
+  status: tourData.status,
+  seo_title: tourData.seo_title,
+  seo_description: tourData.seo_description,
 });
 
-const tourUpdateSchema = tourSchema.partial();
+const transformTourForResponse = (tourData: Record<string, unknown>) => ({
+  id: tourData.id as number,
+  name: tourData.title as string,
+  slug: tourData.slug as string,
+  short_description: tourData.short_description as string,
+  description: tourData.description as string,
+  price: tourData.price as number,
+  duration: tourData.duration as string,
+  max_passengers: parseInt((tourData.group_size as string)?.split(' ')[0] || '1'),
+  min_passengers: 1,
+  category: (tourData.categories as string[])?.[0] || '',
+  difficulty: 'easy',
+  featured_image: tourData.image_url as string,
+  gallery_images: [],
+  highlights: tourData.highlights as string[] || [],
+  included: tourData.includes as string[] || [],
+  not_included: [],
+  requirements: [],
+  status: tourData.status as string,
+  seo_title: tourData.seo_title as string,
+  seo_description: tourData.seo_description as string,
+  currency: 'USD',
+  created_at: tourData.created_at as string,
+  updated_at: tourData.updated_at as string,
+});
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const { data, error: dbError } = await supabaseAdmin
-      .from('tours')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '100');
+    const offset = parseInt(searchParams.get('offset') || '0');
+    const search = searchParams.get('search');
+    const status = searchParams.get('status');
 
-    if (dbError) {
-      console.error('Database error:', dbError.message);
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch tours' },
-        { status: 500 }
-      );
+    // Validate pagination parameters
+    const paginationResult = schemas.pagination.safeParse({ limit, offset });
+    if (!paginationResult.success) {
+      return apiHandler.validationError(paginationResult);
     }
 
-    return NextResponse.json({ success: true, data });
-  } catch (err) {
-    console.error('Unexpected error fetching tours:', err);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    // Build query options
+    const queryOptions = {
+      orderBy: { column: 'created_at', ascending: false },
+      limit,
+      offset,
+      filters: {} as Record<string, unknown>,
+    };
+
+    if (search) {
+      // Note: This would need to be implemented with full-text search in Supabase
+      // For now, we'll filter client-side
+    }
+
+    if (status) {
+      queryOptions.filters.status = status;
+    }
+
+    const { data, error, count } = await DatabaseOperations.getAll('tours', queryOptions);
+
+    if (error) {
+      return apiHandler.databaseError(error, 'fetch tours');
+    }
+
+    // Transform data for consistent API response
+    const transformedData = data?.map((item: unknown) => transformTourForResponse(item as Record<string, unknown>)) || [];
+
+    return apiHandler.paginated(transformedData, limit, offset, count || 0);
+  } catch (error) {
+    console.error('Unexpected error fetching tours:', error);
+    return apiHandler.error('Internal server error');
   }
 }
 
@@ -69,57 +103,29 @@ export async function POST(request: Request) {
     const body = await request.json();
     
     // Validate input
-    const parsedData = tourSchema.safeParse(body);
+    const parsedData = schemas.tour.safeParse(body);
     if (!parsedData.success) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid tour data', details: parsedData.error },
-        { status: 400 }
-      );
+      return apiHandler.validationError(parsedData);
     }
 
     // Transform data to match database schema
-    const tourData = {
-      title: parsedData.data.name,
-      slug: parsedData.data.slug,
-      short_description: parsedData.data.short_description,
-      description: parsedData.data.description,
-      price: parsedData.data.price,
-      duration: parsedData.data.duration,
-      group_size: `${parsedData.data.max_passengers} people`,
-      includes: parsedData.data.included || [],
-      departure: 'Hotel pickup',
-      languages: ['English'],
-      image_url: parsedData.data.featured_image || '',
-      highlights: parsedData.data.highlights || [],
-      itinerary: [],
-      categories: parsedData.data.category ? [parsedData.data.category] : [],
-      tags: [],
-      status: parsedData.data.status,
-      seo_title: parsedData.data.seo_title,
-      seo_description: parsedData.data.seo_description,
-    };
+    const tourData = transformTourForDatabase(parsedData.data as Record<string, unknown>);
 
-    const { data, error: dbError } = await supabaseAdmin
-      .from('tours')
-      .insert([tourData])
-      .select()
-      .single();
+    const { data, error } = await DatabaseOperations.create('tours', tourData);
 
-    if (dbError) {
-      console.error('Database error:', dbError.message);
-      return NextResponse.json(
-        { success: false, error: 'Failed to create tour' },
-        { status: 500 }
-      );
+    if (error) {
+      return apiHandler.databaseError(error, 'create tour');
     }
 
-    return NextResponse.json({ success: true, data });
-  } catch (err) {
-    console.error('Unexpected error creating tour:', err);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    if (!data) {
+      return apiHandler.error('Failed to create tour - no data returned');
+    }
+
+    const transformedData = transformTourForResponse(data as Record<string, unknown>);
+    return apiHandler.success(transformedData, 201);
+  } catch (error) {
+    console.error('Unexpected error creating tour:', error);
+    return apiHandler.error('Internal server error');
   }
 }
 
@@ -129,23 +135,17 @@ export async function PUT(request: Request) {
     const { id, ...tourData } = body;
     
     if (!id) {
-      return NextResponse.json(
-        { success: false, error: 'Tour ID is required' },
-        { status: 400 }
-      );
+      return apiHandler.error('Tour ID is required', 400);
     }
 
     // Validate input
-    const parsedData = tourUpdateSchema.safeParse(tourData);
+    const parsedData = schemas.tourUpdate.safeParse(tourData);
     if (!parsedData.success) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid tour data', details: parsedData.error },
-        { status: 400 }
-      );
+      return apiHandler.validationError(parsedData);
     }
 
     // Transform data to match database schema
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (parsedData.data.name) updateData.title = parsedData.data.name;
     if (parsedData.data.slug) updateData.slug = parsedData.data.slug;
     if (parsedData.data.short_description) updateData.short_description = parsedData.data.short_description;
@@ -161,27 +161,20 @@ export async function PUT(request: Request) {
     if (parsedData.data.seo_title) updateData.seo_title = parsedData.data.seo_title;
     if (parsedData.data.seo_description) updateData.seo_description = parsedData.data.seo_description;
 
-    const { data, error: dbError } = await supabaseAdmin
-      .from('tours')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
+    const { data, error } = await DatabaseOperations.update('tours', id, updateData);
 
-    if (dbError) {
-      console.error('Database error:', dbError.message);
-      return NextResponse.json(
-        { success: false, error: 'Failed to update tour' },
-        { status: 500 }
-      );
+    if (error) {
+      return apiHandler.databaseError(error, 'update tour');
     }
 
-    return NextResponse.json({ success: true, data });
-  } catch (err) {
-    console.error('Unexpected error updating tour:', err);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    if (!data) {
+      return apiHandler.notFound('Tour');
+    }
+
+    const transformedData = transformTourForResponse(data);
+    return apiHandler.success(transformedData);
+  } catch (error) {
+    console.error('Unexpected error updating tour:', error);
+    return apiHandler.error('Internal server error');
   }
 } 

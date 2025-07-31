@@ -2,14 +2,18 @@ import { createServerClient } from '@supabase/ssr';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-// Environment variables with fallbacks for development
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bsxloajxptdsgqkxbiem.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzeGxvYWp4cHRkc2dxa3hiaWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY5MzUyMzMsImV4cCI6MjA2MjUxMTIzM30.lhZoU7QeDRI4yBVvfOiRs1nBTe7BDkwDxchNWsA1kXk';
+// Environment variables - NO FALLBACKS for production security
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Validate required environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing required Supabase environment variables for middleware');
 }
+
+// Type assertion after validation
+const validatedSupabaseUrl = supabaseUrl as string;
+const validatedSupabaseAnonKey = supabaseAnonKey as string;
 
 const ADMIN_PATH = '/mt-operations';
 
@@ -37,12 +41,12 @@ export async function middleware(request: NextRequest) {
       const response = NextResponse.next();
       
       // Check authentication using Supabase
-      const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+      const supabase = createServerClient(validatedSupabaseUrl, validatedSupabaseAnonKey, {
         cookies: {
           getAll() {
             return request.cookies.getAll();
           },
-          setAll(cookiesToSet) {
+          setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
             cookiesToSet.forEach(({ name, value, options }) => {
               response.cookies.set(name, value, options);
             });

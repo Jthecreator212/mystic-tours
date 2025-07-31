@@ -5,11 +5,20 @@
  * Run with: npx ts-node --project tsconfig.scripts.json scripts/security-audit.ts
  */
 
+// Load environment variables from .env.local
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+
 import { createClient } from '@supabase/supabase-js';
 
-// Environment variables with fallbacks for development
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bsxloajxptdsgqkxbiem.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzeGxvYWp4cHRkc2dxa3hiaWVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjkzNTIzMywiZXhwIjoyMDYyNTExMjMzfQ.q-T_wVjHm5MtkyvO93pdnuQiXkPIEpYsqeLcFI8sryA';
+// Environment variables - NO FALLBACKS for production security
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Validate required environment variables
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing required Supabase environment variables for security audit');
+}
 
 interface SecurityCheck {
   name: string;
@@ -35,7 +44,11 @@ class SecurityAuditor {
   private results: SecurityCheck[] = [];
 
   constructor() {
-    this.supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    // Type assertion after validation (already done at the top of the file)
+    const validatedSupabaseUrl = supabaseUrl as string;
+    const validatedSupabaseServiceKey = supabaseServiceKey as string;
+    
+    this.supabase = createClient(validatedSupabaseUrl, validatedSupabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false

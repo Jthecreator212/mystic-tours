@@ -100,7 +100,7 @@ export async function PUT(
     }
 
     // Transform data to match database schema
-    const tourData: any = {};
+    const tourData: Record<string, unknown> = {};
     
     if (parsedData.data.name) tourData.title = parsedData.data.name;
     if (parsedData.data.slug) tourData.slug = parsedData.data.slug;

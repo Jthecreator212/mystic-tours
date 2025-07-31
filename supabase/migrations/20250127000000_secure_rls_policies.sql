@@ -48,33 +48,48 @@ CREATE INDEX IF NOT EXISTS idx_bookings_customer_email ON bookings(customer_emai
 CREATE INDEX IF NOT EXISTS idx_airport_pickup_bookings_created_at ON airport_pickup_bookings(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_airport_pickup_bookings_status ON airport_pickup_bookings(status);
 CREATE INDEX IF NOT EXISTS idx_airport_pickup_bookings_customer_email ON airport_pickup_bookings(customer_email);
-CREATE INDEX IF NOT EXISTS idx_drivers_active ON drivers(active) WHERE active = true;
-CREATE INDEX IF NOT EXISTS idx_driver_assignments_date ON driver_assignments(assignment_date);
+CREATE INDEX IF NOT EXISTS idx_drivers_status ON drivers(status) WHERE status = 'available';
+CREATE INDEX IF NOT EXISTS idx_driver_assignments_assigned_at ON driver_assignments(assigned_at DESC);
 
--- Add constraints for data integrity
-ALTER TABLE bookings 
-ADD CONSTRAINT check_booking_status 
-CHECK (status IN ('pending', 'confirmed', 'cancelled', 'completed'));
-
-ALTER TABLE airport_pickup_bookings 
-ADD CONSTRAINT check_airport_booking_status 
-CHECK (status IN ('pending', 'confirmed', 'cancelled', 'completed'));
-
-ALTER TABLE bookings 
-ADD CONSTRAINT check_positive_amount 
-CHECK (total_amount > 0);
-
-ALTER TABLE airport_pickup_bookings 
-ADD CONSTRAINT check_positive_price 
-CHECK (total_price > 0);
-
-ALTER TABLE bookings 
-ADD CONSTRAINT check_positive_guests 
-CHECK (number_of_people > 0);
-
-ALTER TABLE airport_pickup_bookings 
-ADD CONSTRAINT check_positive_passengers 
-CHECK (passengers > 0);
+-- Add constraints for data integrity (only if they don't exist)
+DO $$ 
+BEGIN
+    -- Booking status constraint
+    IF NOT EXISTS (SELECT 1 FROM information_schema.check_constraints WHERE constraint_name = 'check_booking_status') THEN
+        ALTER TABLE bookings ADD CONSTRAINT check_booking_status 
+        CHECK (status IN ('pending', 'confirmed', 'cancelled', 'completed'));
+    END IF;
+    
+    -- Airport booking status constraint
+    IF NOT EXISTS (SELECT 1 FROM information_schema.check_constraints WHERE constraint_name = 'check_airport_booking_status') THEN
+        ALTER TABLE airport_pickup_bookings ADD CONSTRAINT check_airport_booking_status 
+        CHECK (status IN ('pending', 'confirmed', 'cancelled', 'completed'));
+    END IF;
+    
+    -- Positive amount constraint
+    IF NOT EXISTS (SELECT 1 FROM information_schema.check_constraints WHERE constraint_name = 'check_positive_amount') THEN
+        ALTER TABLE bookings ADD CONSTRAINT check_positive_amount 
+        CHECK (total_amount > 0);
+    END IF;
+    
+    -- Positive price constraint
+    IF NOT EXISTS (SELECT 1 FROM information_schema.check_constraints WHERE constraint_name = 'check_positive_price') THEN
+        ALTER TABLE airport_pickup_bookings ADD CONSTRAINT check_positive_price 
+        CHECK (total_price > 0);
+    END IF;
+    
+    -- Positive guests constraint
+    IF NOT EXISTS (SELECT 1 FROM information_schema.check_constraints WHERE constraint_name = 'check_positive_guests') THEN
+        ALTER TABLE bookings ADD CONSTRAINT check_positive_guests 
+        CHECK (number_of_people > 0);
+    END IF;
+    
+    -- Positive passengers constraint
+    IF NOT EXISTS (SELECT 1 FROM information_schema.check_constraints WHERE constraint_name = 'check_positive_passengers') THEN
+        ALTER TABLE airport_pickup_bookings ADD CONSTRAINT check_positive_passengers 
+        CHECK (passengers > 0);
+    END IF;
+END $$;
 
 -- Add triggers for audit logging (optional)
 CREATE OR REPLACE FUNCTION log_booking_changes()

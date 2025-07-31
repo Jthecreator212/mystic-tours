@@ -34,9 +34,9 @@ export default function TourForm({ tour, onSave, onCancel, mode }: TourFormProps
   });
 
   const [loading, setLoading] = useState(false);
-  const [imageUploading, setImageUploading] = useState(false);
+  const [_imageUploading, setImageUploading] = useState(false);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -68,7 +68,7 @@ export default function TourForm({ tour, onSave, onCancel, mode }: TourFormProps
       } else {
         alert('Failed to upload image');
       }
-    } catch (err) {
+    } catch {
       alert('Failed to upload image');
     } finally {
       setImageUploading(false);
@@ -104,7 +104,7 @@ export default function TourForm({ tour, onSave, onCancel, mode }: TourFormProps
       };
       
       onSave(tourData);
-    } catch (err) {
+    } catch {
       alert('Failed to save tour');
     } finally {
       setLoading(false);
@@ -331,7 +331,7 @@ export default function TourForm({ tour, onSave, onCancel, mode }: TourFormProps
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                What's Included (comma-separated)
+                What&apos;s Included (comma-separated)
               </label>
               <textarea
                 value={formData.included.join(', ')}
@@ -344,7 +344,7 @@ export default function TourForm({ tour, onSave, onCancel, mode }: TourFormProps
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                What's Not Included (comma-separated)
+                What&apos;s Not Included (comma-separated)
               </label>
               <textarea
                 value={formData.not_included.join(', ')}
